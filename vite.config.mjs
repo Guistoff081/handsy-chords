@@ -16,4 +16,10 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./tests/setup.js"],
+    css: true,
+    include: ["tests/**/*.test.{js,jsx}"],
+  },
 });
