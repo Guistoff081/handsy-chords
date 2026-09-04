@@ -62,7 +62,7 @@ describe("note highway", () => {
     context.moveTo.mockClear();
     rerender(<NoteHighway {...props} visible={false} />);
     expect(context.fillText).not.toHaveBeenCalled();
-    expect(context.moveTo.mock.calls.some(([, y]) => y === 525)).toBe(true);
+    expect(context.moveTo.mock.calls.some(([, y]) => y === 507.5)).toBe(true);
   });
 
   it("keeps one animation loop across clock updates and cancels it on pause/unmount", () => {

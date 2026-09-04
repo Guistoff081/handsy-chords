@@ -5,7 +5,7 @@ export function HandCoach({ chord = "Em" }) {
   const target = CHORDS[chord];
   return (
     <aside className="hand-coach" aria-label="Orientação de mão">
-      <section className="hand-coach-monitor" aria-label={`Posição alvo de ${target.name}`}>
+      <section className="hand-coach-monitor amp-panel" aria-label={`Posição alvo de ${target.name}`}>
         <h2 className="hand-coach-chord">{target.name}</h2>
         <ChordDiagram chord={target} />
         <div className="hand-coach-legend">
@@ -14,7 +14,7 @@ export function HandCoach({ chord = "Em" }) {
         </div>
         <p className="hand-coach-correction">DEDO 3 · MAIS PERTO DO TRASTE</p>
       </section>
-      <figure className="hand-coach-camera">
+      <figure className="hand-coach-camera amp-panel">
         <img src="/assets/hand-camera.webp" alt="Mão observada na câmera simulada, com posição a corrigir" />
         <figcaption>Câmera simulada · posição observada</figcaption>
       </figure>

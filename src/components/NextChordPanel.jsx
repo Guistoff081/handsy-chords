@@ -6,17 +6,18 @@ export function NextChordPanel({ cue, nextCue }) {
   const nextChord = getChord(nextCue?.chord ?? cue.chord);
 
   return (
-    <aside className="next-chord-panel" aria-label="Próximo acorde">
+    <aside className="next-chord-panel amp-panel" aria-label="Próximo acorde">
       <div className="next-chord-current">
         <p>AGORA</p>
         <strong>{currentChord.name}</strong>
         <ChordDiagram chord={currentChord} width={180} height={110} showObserved={false} />
       </div>
       <div className="next-chord-upcoming">
-        <p>PRÓXIMO</p>
+        <p>DEPOIS</p>
         <strong>{nextChord.name}</strong>
         <ChordDiagram chord={nextChord} width={180} height={110} showObserved={false} />
       </div>
+      <p className="next-chord-confidence"><span>Áudio 96%</span><span>Mão 82%</span></p>
     </aside>
   );
 }

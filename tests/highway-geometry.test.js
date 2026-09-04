@@ -15,8 +15,8 @@ describe("highway projection", () => {
     expect(projectEvent(1_000, 2_000, viewport).visible).toBe(false);
   });
 
-  it("places an on-time event on the hit line at three quarters height", () => {
-    expect(projectEvent(5_000, 5_000, viewport)).toMatchObject({ x: 380, y: 525, visible: true });
+  it("places an on-time event on the approved stage hit line", () => {
+    expect(projectEvent(5_000, 5_000, viewport)).toMatchObject({ x: 380, y: 507.5, visible: true });
   });
 
   it("keeps events outside the approach window invisible", () => {

@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App.jsx";
@@ -17,6 +17,28 @@ afterEach(() => {
 });
 
 describe("practice screen", () => {
+  it("opens and closes the hand drawer without changing playback or the hand layer", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const drawer = screen.getByRole("button", { name: "Orientação de mão" });
+    expect(drawer).toHaveAttribute("aria-expanded", "false");
+    await user.click(drawer);
+    expect(drawer).toHaveAttribute("aria-expanded", "true");
+    expect(document.getElementById(drawer.getAttribute("aria-controls"))).toHaveAttribute("data-open", "true");
+    expect(screen.getByRole("button", { name: "Mão" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Reproduzir" })).toBeVisible();
+    await user.click(drawer);
+    expect(drawer).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("runs the score demo through the score monitor itself", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const score = screen.getByRole("region", { name: "Pontuação" });
+    await user.click(within(score).getByRole("button", { name: "Demonstrar multiplicador" }));
+    expect(within(score).getByText("24 ACERTOS")).toBeVisible();
+  });
+
   it("starts paused and toggles playback", async () => {
     const user = userEvent.setup();
     render(<App />);

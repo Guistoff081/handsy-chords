@@ -1,6 +1,6 @@
 // CSS-pixel coordinates: the renderer alone owns device-pixel scaling.
-export const HIT_LINE = 0.75;
-export const HORIZON = 0.08;
+export const HIT_LINE = 0.725;
+export const HORIZON = 0.225;
 
 export function projectEvent(eventTimeMs, elapsedMs, viewport) {
   const remaining = eventTimeMs - elapsedMs;

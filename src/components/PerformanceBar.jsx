@@ -1,10 +1,10 @@
-import { Gear, Pause, Play } from "@phosphor-icons/react";
+import { Gear, Pause, Play, Waveform } from "@phosphor-icons/react";
 
 function formatTime(elapsedMs) {
   const totalSeconds = Math.floor(elapsedMs / 1_000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 export function PerformanceBar({ elapsedMs, onSettings, onTogglePlayback, playing, song }) {
@@ -13,14 +13,14 @@ export function PerformanceBar({ elapsedMs, onSettings, onTogglePlayback, playin
   return (
     <header className="performance-bar">
       <div className="song-details">
-        <p>{song.section}</p>
+        <Waveform className="song-waveform" aria-hidden="true" />
         <h1>{song.title}</h1>
+        <p>{song.section}</p>
         <p>{song.bpm} BPM</p>
       </div>
       <div className="playback-progress">
-        <span>{formatTime(elapsedMs)}</span>
         <progress aria-label="Progresso da música" max="100" value={progress} />
-        <span>{formatTime(song.durationMs)}</span>
+        <span className="playback-time">{formatTime(elapsedMs)} <span>/</span> {formatTime(song.durationMs)}</span>
       </div>
       <div className="performance-actions">
         <button

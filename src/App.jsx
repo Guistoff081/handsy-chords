@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { CaretUp, Hand } from "@phosphor-icons/react";
 import { playLightningSound, prepareLightningSound } from "./audio/lightningSound.js";
 import { DEMO_SONG } from "./data/demoSong.js";
 import { NoteHighway } from "./canvas/NoteHighway.jsx";
@@ -22,6 +23,7 @@ function isInteractiveOrEditable(target) {
 
 export function App() {
   const { state, dispatch, triggerScoreDemo } = usePracticeSession();
+  const [coachOpen, setCoachOpen] = useState(false);
   const reducedMotion = state.effects.reducedMotion || state.osReducedMotion;
   const cueIndex = DEMO_SONG.lyrics.reduce(
     (activeIndex, candidate, index) => (candidate.atMs <= state.elapsedMs ? index : activeIndex),
@@ -65,7 +67,7 @@ export function App() {
   }
 
   return (
-    <main className="practice-screen">
+    <main className="practice-shell practice-screen" data-playing={state.playing} data-reduced-motion={reducedMotion}>
       <PerformanceBar
         elapsedMs={state.elapsedMs}
         playing={state.playing}
@@ -80,7 +82,7 @@ export function App() {
           layers={state.layers}
           onToggle={(layer) => dispatch({ type: "layer/toggle", payload: { layer } })}
         />
-        <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} />
+        <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} onDemonstrate={triggerScoreDemo} celebrating={state.celebrating} />
         {state.layers.lyrics && <LyricsLayer cue={cue} />}
         <p className="simulation-label">{DEMO_SONG.excerpt.label}</p>
         <NoteHighway
@@ -92,10 +94,31 @@ export function App() {
           celebrating={state.celebrating}
           lightning={state.effects.lightning}
         />
-        {state.layers.hand && <HandCoach chord={cue.chord} />}
+        {state.layers.hand && (
+          <div className="coach-drawer" data-open={coachOpen}>
+            <button
+              className="coach-drawer-toggle"
+              type="button"
+              aria-label="Orientação de mão"
+              aria-expanded={coachOpen}
+              aria-controls="hand-coach-drawer"
+              onClick={() => setCoachOpen((open) => !open)}
+            >
+              <Hand aria-hidden="true" />
+              <span>Orientação de mão</span>
+              <CaretUp aria-hidden="true" />
+            </button>
+            <div className="coach-drawer-content" id="hand-coach-drawer" data-open={coachOpen}>
+              <HandCoach chord={cue.chord} />
+            </div>
+          </div>
+        )}
         <NextChordPanel cue={cue} nextCue={nextCue} />
-        <button type="button" onClick={triggerScoreDemo}>Demonstrar multiplicador</button>
-        <div className="practice-feedback" role="status" aria-live="polite">{state.feedback}</div>
+        <div className="practice-feedback" data-result={state.feedback === "AJUSTE O TEMPO" ? "miss" : state.feedback === "UM POUCO TARDE" ? "late" : "success"} role="status" aria-live="polite">
+          <span>{state.feedback}</span>
+          {state.feedback !== "AJUSTE O TEMPO" && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
+        </div>
+        <p className="landscape-hint">Use a tela principal em modo paisagem para a experiência completa.</p>
       </section>
 
       {state.settingsOpen && (

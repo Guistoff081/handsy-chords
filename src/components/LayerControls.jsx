@@ -1,8 +1,8 @@
-import { Guitar, Hand, TextAlignLeft } from "@phosphor-icons/react";
+import { Waveform, Hand, Microphone, WarningCircle } from "@phosphor-icons/react";
 
 const LAYERS = [
-  ["track", "Trilha", Guitar],
-  ["lyrics", "Letra", TextAlignLeft],
+  ["track", "Trilha", Waveform],
+  ["lyrics", "Letra", Microphone],
   ["hand", "Mão", Hand],
 ];
 
@@ -20,7 +20,7 @@ export function LayerControls({ layers, onToggle }) {
         >
           <Icon weight="fill" aria-hidden="true" />
           <span>{label.toUpperCase()}</span>
-          {key === "hand" && <i className="alert-dot" aria-label="Correção disponível" />}
+          {key === "hand" && <WarningCircle className="alert-dot" weight="fill" aria-label="Correção disponível" />}
         </button>
       ))}
     </section>
