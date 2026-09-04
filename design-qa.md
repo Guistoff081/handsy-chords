@@ -27,7 +27,7 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 
 - P0: none.
 - P1: none.
-- P2: none after the three recorded correction passes below.
+- P2: none after the four recorded correction passes below.
 - P3: the rotated next-chord monitor extends about 3 px past the right edge at 1024 × 768. Its border is lightly cropped, but all chord content and confidence values remain visible and the intentional angled-monitor composition is preserved.
 
 ## Required fidelity surfaces
@@ -48,8 +48,8 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 - The score demonstration reaches `024 880`, `24 ACERTOS`, and `x4`; `data-celebrating` is true during the pulse and false after 700 ms.
 - Reduced motion sets the root reduced-motion state and computes `animation-name: none`, `animation-duration: 0s`, and `transition-duration: 0s` for the multiplier.
 - Keyboard focus reaches the score control with a visible 3 px off-white outline.
-- At 390 × 844 the score stays on one line, all persistent controls fit the viewport, settings stays within bounds, and the coach is a collapsed bottom drawer that expands to a scrollable 430 px panel.
-- At 640 × 360 the score, current lyric, simplified chord strip, landscape recommendation, and coach drawer occupy distinct vertical bands; the expanded coach remains scrollable and its collapse control remains reachable.
+- At 390 × 844 the score stays on one line, the complete `01:14 / 03:38` playback time remains legible beside both 40 × 42 px action controls, settings stays within bounds, and the coach is a collapsed bottom drawer that expands to a scrollable 430 px panel.
+- At 640 × 360 the complete `01:14 / 03:38` playback time remains legible beside both action controls; the score, current lyric, simplified chord strip, landscape recommendation, and coach drawer occupy distinct vertical bands; the expanded coach remains scrollable and its collapse control remains reachable.
 - Console review after the complete interaction flow: 0 errors and 0 warnings, including no repeated animation or timer warnings.
 
 ## Comparison history
@@ -57,6 +57,7 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 1. Desktop pass — P2: the diagonal coach panel obscured the multiplier's `x`, leaving only `4` visibly legible. Evidence: `qa/comparison-1586-pass-1.png`. Fix: raised the HUD stacking level above the coach while retaining the intended overlap. Post-fix evidence: `qa/comparison-1586-final.png` and `qa/comparison-focus-hud-em.png`, where the complete `x4` is visible.
 2. Mobile pass — P2: the desktop `max-width: 210px` cap persisted at 390 × 844, wrapping `024 680` into two lines and colliding with `Em`. Evidence: `qa/prototype-390x844-pass-1.png`. Fix: removed the max-width cap only below 640 px. Post-fix evidence: `qa/prototype-390x844.png`; the HUD measures 358 × 50 px and ends at y=200 while lyrics begin at y=207.
 3. Short-landscape pass — P2: at 640 × 360 the score, lyric, chord strip, and feedback overlapped. Evidence: `qa/prototype-640x360-pass-1.png`. Fix: added a short-height layout that compacts the chord strip, reduces lyrics to the current line, hides nonessential duplicate feedback/loop copy, and assigns distinct vertical bands. Post-fix evidence: `qa/prototype-640x360.png`; the score ends at y=188, lyric occupies y=190–212, chord strip y=232–270, landscape guidance y=285–300, and drawer y=307–360.
+4. Playback-time pass — P2: at 390 × 844 and 640 × 360 the zero-basis playback region collapsed to 0 px, leaving isolated `0` glyphs under the action controls instead of the intended `01:14 / 03:38`. Fix: reserved the playback region's intrinsic width below 640 px while preserving both action controls. Post-fix evidence: recaptured `qa/prototype-390x844.png` and `qa/prototype-640x360.png`; the readout is complete, has 89 px of rendered and scroll width, remains inside the performance bar, and does not overlap either 40 × 42 px button at both viewports.
 
 ## Open questions
 
@@ -68,6 +69,7 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 - [x] Keep canonical Em targets on D and A after the coach transform.
 - [x] Prevent score wrapping at 390 × 844.
 - [x] Preserve controls, guidance, chord strip, and coach access at 640 × 360.
+- [x] Keep the complete playback time legible beside accessible controls at 390 × 844 and 640 × 360.
 - [x] Verify keyboard, toggles, settings, score, lightning, sound opt-in, reduced motion, collapse, and console state.
 - [x] Capture and compare the final browser render against the reference in one combined image.
 
