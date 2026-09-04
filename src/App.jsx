@@ -1,5 +1,7 @@
 import { useEffect, useReducer } from "react";
 import { DEMO_SONG } from "./data/demoSong.js";
+import { NoteHighway } from "./canvas/NoteHighway.jsx";
+import { StageAtmosphere } from "./canvas/StageAtmosphere.jsx";
 import { HandCoach } from "./components/HandCoach.jsx";
 import { LayerControls } from "./components/LayerControls.jsx";
 import { LyricsLayer } from "./components/LyricsLayer.jsx";
@@ -48,13 +50,22 @@ export function App() {
       />
 
       <section className="practice-stage" aria-label="Sessão de prática">
+        <StageAtmosphere smoke={state.effects.smoke} playing={state.playing} reducedMotion={state.effects.reducedMotion} />
         <LayerControls
           layers={state.layers}
           onToggle={(layer) => dispatch({ type: "layer/toggle", payload: { layer } })}
         />
         <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} />
         {state.layers.lyrics && <LyricsLayer cue={cue} />}
-        {state.layers.track && <p className="track-guidance">Trilha de notas ativa</p>}
+        <NoteHighway
+          events={DEMO_SONG.events}
+          elapsedMs={state.elapsedMs}
+          playing={state.playing}
+          visible={state.layers.track}
+          reducedMotion={state.effects.reducedMotion}
+          celebrating={state.celebrating}
+          lightning={state.effects.lightning}
+        />
         {state.layers.hand && <HandCoach />}
         <NextChordPanel cue={cue} nextCue={nextCue} />
         <div className="practice-feedback" role="status" aria-live="polite">{state.feedback}</div>
