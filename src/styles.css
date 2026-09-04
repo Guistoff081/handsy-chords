@@ -57,7 +57,7 @@ p, h1, h2, figure { margin: 0; }
 .simulation-label { position: absolute; z-index: 4; bottom: 14px; left: 50%; transform: translateX(-50%); white-space: nowrap; color: #a4b3c7; font: 500 13px / 1.2 var(--display); letter-spacing: .1em; text-shadow: 0 2px 4px #000; }
 /* Metallic UI enclosures; stage and camera are the approved real image assets. */
 .amp-panel { background: linear-gradient(145deg, #17222e 0, #05090e 6%, #111720 45%, #02060a 100%); border: 3px ridge #53606c; border-radius: 7px; box-shadow: inset 0 0 0 5px #04070a, inset 0 0 0 8px #27323d, inset 0 0 0 10px #070b11, 0 10px 20px #000a; }
-.score-hud { position: absolute; z-index: 4; left: 21.3%; top: 9%; width: 13%; max-width: 210px; min-width: 132px; padding: 17px 12px 14px; text-align: center; font-family: var(--display); }
+.score-hud { position: absolute; z-index: 7; left: 21.3%; top: 9%; width: 13%; max-width: 210px; min-width: 132px; padding: 17px 12px 14px; text-align: center; font-family: var(--display); }
 .score-demo { display: flex; align-items: center; flex-direction: column; width: 100%; border: 0; background: #030910b3; padding: 5px 0 12px; }
 .score-label, .score-streak { color: var(--cyan); font-size: clamp(19px, 1.6vw, 26px); font-weight: 600; letter-spacing: .1em; line-height: 1.15; }
 .score-value { font-size: clamp(23px, 2vw, 32px); line-height: 1.2; letter-spacing: .075em; font-variant-numeric: tabular-nums; }
@@ -189,7 +189,7 @@ p, h1, h2, figure { margin: 0; }
   .current-lyric { font-size: 28px; }
   .next-lyric { font-size: 25px; margin-top: 5px; }
   .amp-panel { border: 1px solid #4a6073; border-radius: 2px; box-shadow: none; background: #08101aeb; }
-  .score-hud { top: 78px; left: 16px; width: calc(100% - 32px); padding: 8px 12px; }
+  .score-hud { top: 78px; left: 16px; width: calc(100% - 32px); max-width: none; padding: 8px 12px; }
   .score-demo { flex-direction: row; justify-content: space-between; gap: 8px; padding: 0; background: none; }
   .score-label { font-size: 16px; }
   .score-value { font-size: 22px; letter-spacing: .04em; }
@@ -209,6 +209,18 @@ p, h1, h2, figure { margin: 0; }
   .hand-coach-legend { margin-bottom: 12px; }
   .hand-coach-camera { max-width: 350px; justify-self: center; }
   .hand-coach-camera img { max-height: 180px; }
+}
+@media (max-width: 640px) and (max-height: 480px) {
+  .score-hud { top: 66px; }
+  .lyrics-layer { top: 118px; left: 3%; width: 94%; }
+  .lyric-chord, .next-lyric { display: none; }
+  .current-lyric { overflow: hidden; font-size: 20px; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+  .practice-feedback, .simulation-label { display: none; }
+  .next-chord-panel { bottom: 90px; padding: 4px 8px; }
+  .next-chord-current, .next-chord-upcoming { grid-template-columns: 1fr 1fr; grid-template-rows: auto; padding-inline: 10px; }
+  .next-chord-panel strong { font-size: 28px; }
+  .next-chord-panel .chord-diagram { display: none; }
+  .landscape-hint { bottom: 60px; }
 }
 @media (max-width: 380px) {
   .playback-progress { display: none; }
