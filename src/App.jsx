@@ -1,5 +1,6 @@
 import { useEffect, useReducer } from "react";
 import { DEMO_SONG } from "./data/demoSong.js";
+import { HandCoach } from "./components/HandCoach.jsx";
 import { LayerControls } from "./components/LayerControls.jsx";
 import { LyricsLayer } from "./components/LyricsLayer.jsx";
 import { NextChordPanel } from "./components/NextChordPanel.jsx";
@@ -54,7 +55,7 @@ export function App() {
         <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} />
         {state.layers.lyrics && <LyricsLayer cue={cue} />}
         {state.layers.track && <p className="track-guidance">Trilha de notas ativa</p>}
-        {state.layers.hand && <p className="hand-guidance">Orientação de mão ativa</p>}
+        {state.layers.hand && <HandCoach />}
         <NextChordPanel cue={cue} nextCue={nextCue} />
         <div className="practice-feedback" role="status" aria-live="polite">{state.feedback}</div>
       </section>
