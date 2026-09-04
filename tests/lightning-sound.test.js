@@ -1,14 +1,35 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { playLightningSound } from "../src/audio/lightningSound.js";
 
-afterEach(() => vi.unstubAllGlobals());
+async function loadLightningSound() {
+  vi.resetModules();
+  return import("../src/audio/lightningSound.js");
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe("playLightningSound", () => {
   it("reports unavailable when Web Audio is absent", async () => {
     vi.stubGlobal("AudioContext", undefined);
     vi.stubGlobal("webkitAudioContext", undefined);
 
+    const { playLightningSound } = await loadLightningSound();
+
     await expect(playLightningSound()).resolves.toBe(false);
+  });
+
+  it("does not construct audio while an effect is waiting for opt-in preparation", async () => {
+    const constructed = vi.fn();
+    class AudioContextMock {
+      constructor() { constructed(); }
+    }
+    vi.stubGlobal("AudioContext", AudioContextMock);
+    const { playLightningSound } = await loadLightningSound();
+
+    await expect(playLightningSound()).resolves.toBe(false);
+    expect(constructed).not.toHaveBeenCalled();
   });
 
   it("schedules the filtered 650 ms lightning effect", async () => {
@@ -47,11 +68,18 @@ describe("playLightningSound", () => {
     }
     vi.stubGlobal("AudioContext", AudioContextMock);
 
+    const { playLightningSound, prepareLightningSound } = await loadLightningSound();
+    await expect(prepareLightningSound()).resolves.toBe(true);
     await expect(playLightningSound()).resolves.toBe(true);
 
     expect(highPass.frequency.setValueAtTime).toHaveBeenCalledWith(900, 4);
     expect(lowPass.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(700, 4.65);
     expect(gain.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(0.0001, 4.65);
     expect(source.stop).toHaveBeenCalledWith(4.65);
+    source.onended();
+    expect(source.disconnect).toHaveBeenCalledTimes(1);
+    expect(highPass.disconnect).toHaveBeenCalledTimes(1);
+    expect(lowPass.disconnect).toHaveBeenCalledTimes(1);
+    expect(gain.disconnect).toHaveBeenCalledTimes(1);
   });
 });

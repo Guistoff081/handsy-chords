@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { playLightningSound } from "./audio/lightningSound.js";
+import { playLightningSound, prepareLightningSound } from "./audio/lightningSound.js";
 import { DEMO_SONG } from "./data/demoSong.js";
 import { NoteHighway } from "./canvas/NoteHighway.jsx";
 import { StageAtmosphere } from "./canvas/StageAtmosphere.jsx";
@@ -55,6 +55,15 @@ export function App() {
     return () => { active = false; };
   }, [dispatch, state.celebrating, state.effects.sound]);
 
+  function toggleEffect(effect) {
+    if (effect === "sound" && !state.effects.sound) {
+      prepareLightningSound().then((prepared) => {
+        if (!prepared) dispatch({ type: "sound/unavailable" });
+      });
+    }
+    dispatch({ type: "effect/toggle", payload: { effect } });
+  }
+
   return (
     <main className="practice-screen">
       <PerformanceBar
@@ -92,7 +101,7 @@ export function App() {
       {state.settingsOpen && (
         <SettingsPopover
           effects={state.effects}
-          onToggle={(effect) => dispatch({ type: "effect/toggle", payload: { effect } })}
+          onToggle={toggleEffect}
           soundUnavailable={state.soundUnavailable}
         />
       )}

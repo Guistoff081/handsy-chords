@@ -5,8 +5,9 @@ import App from "../src/App.jsx";
 
 vi.mock("../src/audio/lightningSound.js", () => ({
   playLightningSound: vi.fn(() => Promise.resolve(true)),
+  prepareLightningSound: vi.fn(() => Promise.resolve(true)),
 }));
-import { playLightningSound } from "../src/audio/lightningSound.js";
+import { playLightningSound, prepareLightningSound } from "../src/audio/lightningSound.js";
 
 afterEach(() => {
   cleanup();
@@ -77,6 +78,7 @@ describe("practice screen", () => {
     await user.click(screen.getByRole("button", { name: "Configurações" }));
     await user.click(screen.getByRole("checkbox", { name: "Efeito elétrico" }));
     await user.click(screen.getByRole("checkbox", { name: "Som elétrico" }));
+    expect(prepareLightningSound).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Demonstrar multiplicador" }));
 
     await waitFor(() => expect(playLightningSound).toHaveBeenCalledTimes(1));

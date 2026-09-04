@@ -4,15 +4,26 @@ function disconnect(nodes) {
   nodes.forEach((node) => node.disconnect?.());
 }
 
-export async function playLightningSound() {
+export function prepareLightningSound() {
   const AudioContextConstructor = globalThis.AudioContext ?? globalThis.webkitAudioContext;
-  if (!AudioContextConstructor) return false;
+  if (!AudioContextConstructor) return Promise.resolve(false);
+
+  try {
+    audioContext ??= new AudioContextConstructor();
+    if (audioContext.state === "suspended") {
+      return audioContext.resume().then(() => audioContext.state === "running").catch(() => false);
+    }
+    return Promise.resolve(audioContext.state === "running");
+  } catch {
+    return Promise.resolve(false);
+  }
+}
+
+export async function playLightningSound() {
+  if (!audioContext || audioContext.state !== "running") return false;
 
   let nodes = [];
   try {
-    audioContext ??= new AudioContextConstructor();
-    if (audioContext.state === "suspended") await audioContext.resume();
-
     const now = audioContext.currentTime;
     const durationSeconds = 0.65;
     const buffer = audioContext.createBuffer(1, Math.floor(audioContext.sampleRate * durationSeconds), audioContext.sampleRate);
