@@ -170,7 +170,7 @@ p, h1, h2, figure { margin: 0; }
   .simulation-label { bottom: 53px; font-size: 11px; }
 }
 @media (max-width: 640px) {
-  .practice-shell { min-height: 700px; background-position: 54% center; }
+  .practice-shell { min-height: 0; background-position: 54% center; }
   .performance-bar { padding: 8px 12px; height: 72px; gap: 10px; }
   .song-details { flex-direction: column; align-items: flex-start; gap: 6px; }
   .song-details h1 { font-size: 20px; }
