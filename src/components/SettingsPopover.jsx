@@ -5,7 +5,7 @@ const EFFECTS = [
   ["reducedMotion", "Reduzir movimento"],
 ];
 
-export function SettingsPopover({ effects, onToggle }) {
+export function SettingsPopover({ effects, onToggle, soundUnavailable = false }) {
   return (
     <section className="settings-popover" aria-label="Configurações de efeitos">
       <h2>Configurações</h2>
@@ -19,6 +19,7 @@ export function SettingsPopover({ effects, onToggle }) {
           {label}
         </label>
       ))}
+      {soundUnavailable && <p role="status">Som indisponível</p>}
     </section>
   );
 }

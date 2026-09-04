@@ -3,6 +3,16 @@ export const DEMO_SONG = {
   section: "Verse 1",
   bpm: 92,
   durationMs: 218_000,
+  excerpt: {
+    startMs: 72_000,
+    endMs: 80_000,
+    label: "TRECHO EM LOOP · SIMULAÇÃO",
+  },
+  simulation: {
+    cycleEvents: 25,
+    missAt: 0,
+    lateAt: 3,
+  },
   lyrics: [
     { atMs: 72_000, chord: "Em", current: "Come as you are, as you were", next: "As I want you to be" },
     { atMs: 78_000, chord: "G", current: "As I want you to be", next: "As a friend, as a friend" },

@@ -45,4 +45,21 @@ describe("practice model", () => {
     expect(state).toMatchObject({ streak: 0, multiplier: 1, feedback: "AJUSTE O TEMPO" });
     expect(state.layers).toEqual({ track: true, lyrics: true, hand: true });
   });
+
+  it("records a late simulated event with deterministic feedback and score", () => {
+    const initial = { ...createPracticeState(), score: 1_000, streak: 7, multiplier: 1 };
+    const state = practiceReducer(initial, {
+      type: "practice/late",
+      payload: { timingMs: 96 },
+    });
+
+    expect(state).toMatchObject({
+      score: 1_050,
+      streak: 8,
+      multiplier: 2,
+      timingMs: 96,
+      feedback: "UM POUCO TARDE",
+      celebrating: true,
+    });
+  });
 });

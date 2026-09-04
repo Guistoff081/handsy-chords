@@ -10,6 +10,8 @@ export const createPracticeState = () => ({
   feedback: "NO TEMPO · SOOU LIMPO",
   celebrating: false,
   settingsOpen: false,
+  soundUnavailable: false,
+  osReducedMotion: false,
 });
 
 export function multiplierForStreak(streak) {
@@ -23,7 +25,7 @@ export function practiceReducer(state, action) {
     case "playback/toggle":
       return { ...state, playing: !state.playing };
     case "clock/tick":
-      return { ...state, elapsedMs: state.elapsedMs + action.payload.deltaMs };
+      return { ...state, elapsedMs: action.payload.elapsedMs ?? state.elapsedMs + action.payload.deltaMs };
     case "layer/toggle":
       return {
         ...state,
@@ -34,6 +36,10 @@ export function practiceReducer(state, action) {
         ...state,
         effects: { ...state.effects, [action.payload.effect]: !state.effects[action.payload.effect] },
       };
+    case "motion/os":
+      return { ...state, osReducedMotion: action.payload.reducedMotion };
+    case "sound/unavailable":
+      return { ...state, soundUnavailable: true };
     case "settings/toggle":
       return { ...state, settingsOpen: !state.settingsOpen };
     case "demo/prime":
@@ -48,11 +54,31 @@ export function practiceReducer(state, action) {
         score: state.score + 100 * multiplier,
         timingMs: action.payload.timingMs,
         feedback: "NO TEMPO · SOOU LIMPO",
-        celebrating: multiplier > state.multiplier,
+        celebrating: multiplier > state.multiplier || state.celebrating,
+      };
+    }
+    case "practice/late": {
+      const streak = state.streak + 1;
+      const multiplier = multiplierForStreak(streak);
+      return {
+        ...state,
+        streak,
+        multiplier,
+        score: state.score + 50,
+        timingMs: action.payload.timingMs,
+        feedback: "UM POUCO TARDE",
+        celebrating: multiplier > state.multiplier || state.celebrating,
       };
     }
     case "practice/miss":
-      return { ...state, streak: 0, multiplier: 1, feedback: "AJUSTE O TEMPO", celebrating: false };
+      return {
+        ...state,
+        score: Math.max(0, state.score - 25),
+        streak: 0,
+        multiplier: 1,
+        feedback: "AJUSTE O TEMPO",
+        celebrating: false,
+      };
     case "celebration/end":
       return { ...state, celebrating: false };
     default:

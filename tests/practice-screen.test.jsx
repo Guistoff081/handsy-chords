@@ -1,9 +1,19 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App.jsx";
 
-afterEach(cleanup);
+vi.mock("../src/audio/lightningSound.js", () => ({
+  playLightningSound: vi.fn(() => Promise.resolve(true)),
+}));
+import { playLightningSound } from "../src/audio/lightningSound.js";
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe("practice screen", () => {
   it("starts paused and toggles playback", async () => {
@@ -46,6 +56,63 @@ describe("practice screen", () => {
     expect(screen.getByRole("checkbox", { name: "Efeito elétrico" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Som elétrico" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Reduzir movimento" })).not.toBeChecked();
+  });
+
+  it("runs the score demonstration without enabling sound automatically", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Demonstrar multiplicador" }));
+
+    expect(screen.getByText(/24 ACERTOS/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Configurações" }));
+    expect(screen.getByRole("checkbox", { name: "Som elétrico" })).not.toBeChecked();
+    expect(playLightningSound).not.toHaveBeenCalled();
+  });
+
+  it("keeps sound opt-in independent from the visual lightning setting", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Configurações" }));
+    await user.click(screen.getByRole("checkbox", { name: "Efeito elétrico" }));
+    await user.click(screen.getByRole("checkbox", { name: "Som elétrico" }));
+    await user.click(screen.getByRole("button", { name: "Demonstrar multiplicador" }));
+
+    await waitFor(() => expect(playLightningSound).toHaveBeenCalledTimes(1));
+  });
+
+  it("shows an audio availability message without stopping the score demonstration", async () => {
+    vi.mocked(playLightningSound).mockResolvedValueOnce(false);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Configurações" }));
+    await user.click(screen.getByRole("checkbox", { name: "Som elétrico" }));
+    await user.click(screen.getByRole("button", { name: "Demonstrar multiplicador" }));
+
+    expect(await screen.findByText("Som indisponível")).toBeVisible();
+    expect(screen.getByText(/24 ACERTOS/)).toBeVisible();
+  });
+
+  it("keeps the hand coach synchronized with the active G cue during playback", () => {
+    vi.useFakeTimers();
+    let animationFrame;
+    vi.stubGlobal("requestAnimationFrame", vi.fn((callback) => {
+      animationFrame = callback;
+      return 1;
+    }));
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Reproduzir" }));
+    act(() => animationFrame(0));
+    for (let timestamp = 250; timestamp <= 4_000; timestamp += 250) {
+      act(() => animationFrame(timestamp));
+    }
+
+    expect(screen.getByRole("region", { name: "Posição alvo de G" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "G" })).toBeVisible();
   });
 
   it("toggles playback with Space outside interactive controls", () => {
