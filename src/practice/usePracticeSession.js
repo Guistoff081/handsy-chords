@@ -2,6 +2,8 @@ import { useCallback, useEffect, useReducer, useRef } from "react";
 import { DEMO_SONG } from "../data/demoSong.js";
 import { createPracticeState, multiplierForStreak, practiceReducer } from "./model.js";
 
+const REDUCED_MOTION_STEP_MS = 500;
+
 function nextExcerptTime(elapsedMs, deltaMs, excerpt) {
   const duration = excerpt.endMs - excerpt.startMs;
   return excerpt.startMs + ((elapsedMs - excerpt.startMs + deltaMs) % duration + duration) % duration;
@@ -30,9 +32,11 @@ export function usePracticeSession() {
   const frameRef = useRef(null);
   const previousTimeRef = useRef(null);
   const elapsedRef = useRef(createPracticeState().elapsedMs);
+  const visualDeltaRef = useRef(0);
   const stateRef = useRef(createPracticeState());
   const simulationEventRef = useRef(0);
   const timeoutsRef = useRef(new Set());
+  const reducedMotion = state.effects.reducedMotion || state.osReducedMotion;
 
   const scheduleCelebrationEnd = useCallback(() => {
     const timeout = window.setTimeout(() => {
@@ -69,8 +73,11 @@ export function usePracticeSession() {
   }, [scheduleCelebrationEnd]);
 
   useEffect(() => {
-    elapsedRef.current = state.elapsedMs;
-  }, [state.elapsedMs]);
+    if (!reducedMotion) {
+      visualDeltaRef.current = 0;
+      dispatch({ type: "clock/tick", payload: { elapsedMs: elapsedRef.current } });
+    }
+  }, [reducedMotion]);
 
   useEffect(() => {
     if (!window.matchMedia) return undefined;
@@ -91,7 +98,13 @@ export function usePracticeSession() {
         crossedEvents(fromMs, deltaMs, DEMO_SONG).forEach(dispatchSimulatedEvent);
         const elapsedMs = nextExcerptTime(fromMs, deltaMs, DEMO_SONG.excerpt);
         elapsedRef.current = elapsedMs;
-        dispatch({ type: "clock/tick", payload: { elapsedMs } });
+        // Keep event timing precise; publish the visual clock in discrete steps.
+        visualDeltaRef.current += deltaMs;
+        const reduceMotion = stateRef.current.effects.reducedMotion || stateRef.current.osReducedMotion;
+        if (!reduceMotion || visualDeltaRef.current >= REDUCED_MOTION_STEP_MS) {
+          visualDeltaRef.current = reduceMotion ? visualDeltaRef.current % REDUCED_MOTION_STEP_MS : 0;
+          dispatch({ type: "clock/tick", payload: { elapsedMs } });
+        }
       }
       previousTimeRef.current = timestamp;
       frameRef.current = requestAnimationFrame(frame);
