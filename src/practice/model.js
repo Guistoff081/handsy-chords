@@ -4,6 +4,9 @@ export const MODE_LAYERS = {
   challenge: { track: true, lyrics: true, hand: false },
 };
 
+// A live session starts from zero; the demo scoreboard returns when live input is switched off.
+const LIVE_START = { score: 0, streak: 0, multiplier: 1, timingMs: 0, feedback: "TOQUE O ACORDE DA PISTA", celebrating: false };
+
 export const createPracticeState = () => ({
   playing: false,
   elapsedMs: 74_000,
@@ -18,8 +21,15 @@ export const createPracticeState = () => ({
   celebrating: false,
   settingsOpen: false,
   soundUnavailable: false,
+  // Live capture: `enabled` is what the user asked for, `status` what the browser granted.
+  input: { enabled: false, status: "off", level: 0, heard: null },
   osReducedMotion: false,
 });
+
+const demoScoreboard = () => {
+  const { score, streak, multiplier, timingMs, feedback, celebrating } = createPracticeState();
+  return { score, streak, multiplier, timingMs, feedback, celebrating };
+};
 
 export function multiplierForStreak(streak) {
   if (streak >= 24) return 4;
@@ -46,6 +56,21 @@ export function practiceReducer(state, action) {
         ...state,
         effects: { ...state.effects, [action.payload.effect]: !state.effects[action.payload.effect] },
       };
+    case "input/toggle": {
+      const enabled = !state.input.enabled;
+      return { ...state, ...(enabled ? LIVE_START : demoScoreboard()), input: { enabled, status: enabled ? "requesting" : "off", level: 0, heard: null } };
+    }
+    case "input/status": {
+      const { status } = action.payload;
+      // A refused or missing device turns live input back off so the simulation takes over again.
+      const failed = ["denied", "nodevice", "unsupported", "error"].includes(status);
+      const revert = failed && state.input.enabled ? demoScoreboard() : {};
+      return { ...state, ...revert, input: { ...state.input, enabled: failed ? false : state.input.enabled, status } };
+    }
+    case "input/level":
+      return { ...state, input: { ...state.input, level: action.payload.level } };
+    case "input/heard":
+      return { ...state, input: { ...state.input, heard: action.payload } };
     case "motion/os":
       return { ...state, osReducedMotion: action.payload.reducedMotion };
     case "sound/unavailable":
@@ -76,7 +101,7 @@ export function practiceReducer(state, action) {
         multiplier,
         score: state.score + 50,
         timingMs: action.payload.timingMs,
-        feedback: "UM POUCO TARDE",
+        feedback: action.payload.timingMs < 0 ? "UM POUCO CEDO" : "UM POUCO TARDE",
         celebrating: multiplier > state.multiplier || state.celebrating,
       };
     }
@@ -86,7 +111,7 @@ export function practiceReducer(state, action) {
         score: Math.max(0, state.score - 25),
         streak: 0,
         multiplier: 1,
-        feedback: "AJUSTE O TEMPO",
+        feedback: action.payload?.feedback ?? "AJUSTE O TEMPO",
         celebrating: false,
       };
     case "celebration/end":

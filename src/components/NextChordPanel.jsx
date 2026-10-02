@@ -1,7 +1,7 @@
 import { getChord } from "../data/chords.js";
 import { ChordDiagram } from "./ChordDiagram.jsx";
 
-export function NextChordPanel({ cue, nextCue }) {
+export function NextChordPanel({ cue, nextCue, audioLabel = "Áudio 96%" }) {
   const currentChord = getChord(cue.chord);
   const nextChord = getChord(nextCue?.chord ?? cue.chord);
 
@@ -17,7 +17,7 @@ export function NextChordPanel({ cue, nextCue }) {
         <strong>{nextChord.name}</strong>
         <ChordDiagram chord={nextChord} width={180} height={110} showObserved={false} />
       </div>
-      <p className="next-chord-confidence"><span>Áudio 96%</span><span>Mão 82%</span></p>
+      <p className="next-chord-confidence"><span>{audioLabel}</span><span>Mão 82%</span></p>
     </aside>
   );
 }

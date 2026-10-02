@@ -40,6 +40,31 @@ describe("practice model", () => {
     expect(back.layers).toEqual({ track: false, lyrics: true, hand: true });
   });
 
+  it("tracks live input: toggling asks for the microphone and a refusal turns it back off", () => {
+    const asked = practiceReducer(createPracticeState(), { type: "input/toggle" });
+    expect(asked.input).toMatchObject({ enabled: true, status: "requesting" });
+    const listening = practiceReducer(asked, { type: "input/status", payload: { status: "listening" } });
+    expect(listening.input).toMatchObject({ enabled: true, status: "listening" });
+    const denied = practiceReducer(asked, { type: "input/status", payload: { status: "denied" } });
+    expect(denied.input).toMatchObject({ enabled: false, status: "denied" });
+    const off = practiceReducer(listening, { type: "input/toggle" });
+    expect(off.input).toMatchObject({ enabled: false, status: "off", heard: null });
+  });
+
+  it("starts a live session from zero and restores the demo scoreboard afterwards", () => {
+    const live = practiceReducer(createPracticeState(), { type: "input/toggle" });
+    expect(live).toMatchObject({ score: 0, streak: 0, multiplier: 1, feedback: "TOQUE O ACORDE DA PISTA" });
+    const back = practiceReducer(live, { type: "input/toggle" });
+    expect(back).toMatchObject({ score: 24_680, streak: 12, multiplier: 4 });
+  });
+
+  it("labels an early strum as early and keeps a custom miss message", () => {
+    const early = practiceReducer(createPracticeState(), { type: "practice/late", payload: { timingMs: -200 } });
+    expect(early.feedback).toBe("UM POUCO CEDO");
+    const wrong = practiceReducer(createPracticeState(), { type: "practice/miss", payload: { feedback: "OUVI G · TOQUE Em" } });
+    expect(wrong).toMatchObject({ feedback: "OUVI G · TOQUE Em", streak: 0, multiplier: 1 });
+  });
+
   it("ignores unknown modes and ends any celebration when the mode changes", () => {
     const celebrating = { ...createPracticeState(), celebrating: true };
     expect(practiceReducer(celebrating, { type: "mode/set", payload: { mode: "nope" } })).toBe(celebrating);

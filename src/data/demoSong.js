@@ -18,10 +18,13 @@ export const DEMO_SONG = {
     { atMs: 78_000, chord: "G", current: "As I want you to be", next: "As a friend, as a friend" },
   ],
   events: [
+    { atMs: 73_300, kind: "chord", chord: "Em", direction: "down" },
     { atMs: 74_650, kind: "note", string: 1 },
     { atMs: 75_300, kind: "note", string: 4 },
     { atMs: 76_000, kind: "chord", chord: "Em", direction: "down" },
     { atMs: 76_650, kind: "note", string: 2 },
     { atMs: 77_300, kind: "note", string: 5 },
+    { atMs: 78_000, kind: "chord", chord: "G", direction: "down" },
+    { atMs: 79_300, kind: "chord", chord: "G", direction: "up" },
   ],
 };

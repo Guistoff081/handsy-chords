@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { CaretUp, Hand } from "@phosphor-icons/react";
 import { playLightningSound, prepareLightningSound } from "./audio/lightningSound.js";
+import { useLiveInput } from "./audio/useLiveInput.js";
 import { DEMO_SONG } from "./data/demoSong.js";
 import { NoteHighway } from "./canvas/NoteHighway.jsx";
 import { StageAtmosphere } from "./canvas/StageAtmosphere.jsx";
 import { HandCoach } from "./components/HandCoach.jsx";
 import { LayerControls } from "./components/LayerControls.jsx";
+import { LiveStatus } from "./components/LiveStatus.jsx";
 import { LyricsLayer } from "./components/LyricsLayer.jsx";
 import { ModeSwitch } from "./components/ModeSwitch.jsx";
 import { NextChordPanel } from "./components/NextChordPanel.jsx";
@@ -22,8 +24,21 @@ function isInteractiveOrEditable(target) {
   );
 }
 
+// The chords of the song: the live detector chooses among these instead of all 24 triads.
+const SONG_CHORDS = [...new Set(DEMO_SONG.events.filter((event) => event.kind === "chord").map((event) => event.chord))];
+
+const isMissFeedback = (feedback) => feedback === "AJUSTE O TEMPO" || feedback.startsWith("OUVI ") || feedback.startsWith("FALTOU ");
+
 export function App() {
-  const { state, dispatch, triggerScoreDemo } = usePracticeSession();
+  const { state, dispatch, triggerScoreDemo, handleStrum } = usePracticeSession();
+  useLiveInput({
+    enabled: state.input.enabled,
+    onStrum: handleStrum,
+    onStatus: (status) => dispatch({ type: "input/status", payload: { status } }),
+    onLevel: (level) => dispatch({ type: "input/level", payload: { level } }),
+    vocabulary: SONG_CHORDS,
+  });
+  const live = state.input.enabled && state.input.status === "listening";
   const [coachOpen, setCoachOpen] = useState(false);
   const reducedMotion = state.effects.reducedMotion || state.osReducedMotion;
   const cueIndex = DEMO_SONG.lyrics.reduce(
@@ -88,7 +103,8 @@ export function App() {
           <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} onDemonstrate={triggerScoreDemo} celebrating={state.celebrating} />
         )}
         {state.layers.lyrics && <LyricsLayer cue={cue} />}
-        <p className="simulation-label">{DEMO_SONG.excerpt.label}</p>
+        <LiveStatus input={state.input} expectedChord={cue.chord} />
+        <p className="simulation-label">{live ? "TRECHO EM LOOP · AO VIVO" : DEMO_SONG.excerpt.label}</p>
         {state.layers.track && (
           <NoteHighway
             events={DEMO_SONG.events}
@@ -119,11 +135,15 @@ export function App() {
             </div>
           </div>
         )}
-        <NextChordPanel cue={cue} nextCue={nextCue} />
-        {state.layers.track && (
-          <div className="practice-feedback" data-result={state.feedback === "AJUSTE O TEMPO" ? "miss" : state.feedback === "UM POUCO TARDE" ? "late" : "success"} role="status" aria-live="polite">
+        <NextChordPanel
+          cue={cue}
+          nextCue={nextCue}
+          audioLabel={live && state.input.heard ? `Áudio ${Math.round(state.input.heard.confidence * 100)}%` : undefined}
+        />
+        {(state.layers.track || live) && (
+          <div className="practice-feedback" data-result={isMissFeedback(state.feedback) ? "miss" : state.feedback === "UM POUCO TARDE" || state.feedback === "UM POUCO CEDO" ? "late" : "success"} role="status" aria-live="polite">
             <span>{state.feedback}</span>
-            {state.feedback !== "AJUSTE O TEMPO" && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
+            {!isMissFeedback(state.feedback) && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
           </div>
         )}
         <p className="landscape-hint">Use a tela principal em modo paisagem para a experiência completa.</p>
@@ -134,6 +154,8 @@ export function App() {
           effects={state.effects}
           onToggle={toggleEffect}
           soundUnavailable={state.soundUnavailable}
+          input={state.input}
+          onToggleInput={() => dispatch({ type: "input/toggle" })}
         />
       )}
     </main>
