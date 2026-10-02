@@ -30,3 +30,7 @@ Cada fase: commit separado, testes, deploy.
 ## Meta funcional (2026-10-02)
 
 O usuário pediu "finalizar e atualizar o projeto com um protótipo funcional sem ser apenas demo de UI". Arquitetura escolhida: inferência no navegador (opção B; A = Python local + WebRTC via Tailscale + Rails). Entregue: microfone com reconhecimento de acorde julgado contra a pista; câmera com MediaPipe e conferência de dedos. Pendentes: casa/corda por dedo (localizar o braço), bends/strum, sons em camadas e vaia, Three.js no Desafio, celular como câmera, calibração do limiar de dedo dobrado com mãos reais.
+
+## Orientação das cordas (2026-10-02)
+
+Os diagramas de acorde mostram o Mi grave em cima (ordem E A D G B e de cima para baixo), como as cordas ficam no violão do usuário; confirmado por ele. O formato de tablatura (e agudo em cima) segue disponível em Configurações. A pista (colunas E A D G B e da esquerda para a direita) não foi alterada e não houve reclamação sobre ela.
