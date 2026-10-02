@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CaretUp, Hand } from "@phosphor-icons/react";
 import { playLightningSound, prepareLightningSound } from "./audio/lightningSound.js";
 import { useLiveInput } from "./audio/useLiveInput.js";
@@ -15,6 +15,9 @@ import { PerformanceBar } from "./components/PerformanceBar.jsx";
 import { ScoreHud } from "./components/ScoreHud.jsx";
 import { SettingsPopover } from "./components/SettingsPopover.jsx";
 import { usePracticeSession } from "./practice/usePracticeSession.js";
+import { getChord } from "./data/chords.js";
+import { fingersForChord } from "./vision/handMetrics.js";
+import { useHandTracking } from "./vision/useHandTracking.js";
 
 function isInteractiveOrEditable(target) {
   return target instanceof Element && Boolean(
@@ -39,6 +42,8 @@ export function App() {
     vocabulary: SONG_CHORDS,
   });
   const live = state.input.enabled && state.input.status === "listening";
+  const videoRef = useRef(null);
+  const overlayRef = useRef(null);
   const [coachOpen, setCoachOpen] = useState(false);
   const reducedMotion = state.effects.reducedMotion || state.osReducedMotion;
   const cueIndex = DEMO_SONG.lyrics.reduce(
@@ -46,6 +51,17 @@ export function App() {
     0,
   );
   const cue = DEMO_SONG.lyrics[cueIndex];
+  // The camera only runs while the coach card (which holds the video) is on screen.
+  const cameraOn = state.camera.enabled && state.layers.hand;
+  const cameraLive = cameraOn && state.camera.status === "ready";
+  useHandTracking({
+    enabled: cameraOn,
+    videoRef,
+    overlayRef,
+    expectedFingers: fingersForChord(getChord(cue.chord)),
+    onStatus: (status) => dispatch({ type: "camera/status", payload: { status } }),
+    onHand: (hand) => dispatch({ type: "camera/hand", payload: hand }),
+  });
   const nextCue = DEMO_SONG.lyrics[(cueIndex + 1) % DEMO_SONG.lyrics.length];
 
   useEffect(() => {
@@ -131,7 +147,7 @@ export function App() {
               <CaretUp aria-hidden="true" />
             </button>
             <div className="coach-drawer-content" id="hand-coach-drawer" data-open={coachOpen}>
-              <HandCoach chord={cue.chord} />
+              <HandCoach chord={cue.chord} camera={cameraOn ? state.camera : undefined} videoRef={videoRef} overlayRef={overlayRef} />
             </div>
           </div>
         )}
@@ -139,6 +155,7 @@ export function App() {
           cue={cue}
           nextCue={nextCue}
           audioLabel={live && state.input.heard ? `Áudio ${Math.round(state.input.heard.confidence * 100)}%` : undefined}
+          handLabel={cameraLive ? (state.camera.present ? `Mão ${Math.round(state.camera.score * 100)}%` : "Mão —") : undefined}
         />
         {(state.layers.track || live) && (
           <div className="practice-feedback" data-result={isMissFeedback(state.feedback) ? "miss" : state.feedback === "UM POUCO TARDE" || state.feedback === "UM POUCO CEDO" ? "late" : "success"} role="status" aria-live="polite">
@@ -156,6 +173,8 @@ export function App() {
           soundUnavailable={state.soundUnavailable}
           input={state.input}
           onToggleInput={() => dispatch({ type: "input/toggle" })}
+          camera={state.camera}
+          onToggleCamera={() => dispatch({ type: "camera/toggle" })}
         />
       )}
     </main>

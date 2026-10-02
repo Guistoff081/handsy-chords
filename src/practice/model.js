@@ -23,6 +23,7 @@ export const createPracticeState = () => ({
   soundUnavailable: false,
   // Live capture: `enabled` is what the user asked for, `status` what the browser granted.
   input: { enabled: false, status: "off", level: 0, heard: null },
+  camera: { enabled: false, status: "off", present: false, score: 0, pressed: [] },
   osReducedMotion: false,
 });
 
@@ -71,6 +72,17 @@ export function practiceReducer(state, action) {
       return { ...state, input: { ...state.input, level: action.payload.level } };
     case "input/heard":
       return { ...state, input: { ...state.input, heard: action.payload } };
+    case "camera/toggle": {
+      const enabled = !state.camera.enabled;
+      return { ...state, camera: { enabled, status: enabled ? "requesting" : "off", present: false, score: 0, pressed: [] } };
+    }
+    case "camera/status": {
+      const { status } = action.payload;
+      const failed = ["denied", "nodevice", "unsupported", "error"].includes(status);
+      return { ...state, camera: { ...state.camera, enabled: failed ? false : state.camera.enabled, status } };
+    }
+    case "camera/hand":
+      return { ...state, camera: { ...state.camera, ...action.payload } };
     case "motion/os":
       return { ...state, osReducedMotion: action.payload.reducedMotion };
     case "sound/unavailable":

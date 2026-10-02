@@ -1,4 +1,4 @@
-import { INPUT_FAILURES, INPUT_MESSAGES } from "../practice/inputMessages.js";
+import { CAMERA_MESSAGES, INPUT_FAILURES, INPUT_MESSAGES } from "../practice/inputMessages.js";
 
 const EFFECTS = [
   ["smoke", "Fumaça"],
@@ -7,7 +7,7 @@ const EFFECTS = [
   ["reducedMotion", "Reduzir movimento"],
 ];
 
-export function SettingsPopover({ effects, onToggle, soundUnavailable = false, input, onToggleInput }) {
+export function SettingsPopover({ effects, onToggle, soundUnavailable = false, input, onToggleInput, camera, onToggleCamera }) {
   return (
     <section className="settings-popover" aria-label="Configurações de efeitos">
       <h2>Configurações</h2>
@@ -31,6 +31,15 @@ export function SettingsPopover({ effects, onToggle, soundUnavailable = false, i
           </label>
           {(input.status === "requesting" || INPUT_FAILURES.includes(input.status)) && (
             <p role="status">{INPUT_MESSAGES[input.status]}</p>
+          )}
+          {onToggleCamera && (
+            <>
+              <label>
+                <input type="checkbox" checked={camera.enabled} onChange={onToggleCamera} />
+                Câmera: acompanhar os dedos da mão
+              </label>
+              {CAMERA_MESSAGES[camera.status] && <p role="status">{CAMERA_MESSAGES[camera.status]}</p>}
+            </>
           )}
         </>
       )}
