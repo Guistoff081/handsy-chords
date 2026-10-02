@@ -25,7 +25,31 @@ function band(context, viewport, y1, y2) {
   context.closePath();
 }
 
-function drawHighway(context, viewport, props, phase, celebrationStart) {
+const SPARK_COUNT = 18;
+const BURST_MS = 800;
+
+function drawSparks(context, viewport, hit, age) {
+  const { width } = viewport;
+  const t = age / BURST_MS;
+  context.fillStyle = "#dcfbff";
+  context.shadowColor = CYAN;
+  context.shadowBlur = 8;
+  for (let index = 0; index < SPARK_COUNT; index += 1) {
+    // Deterministic spread so the burst looks the same on every replay.
+    const unit = (index * 0.618) % 1;
+    const angle = -Math.PI * (0.08 + 0.84 * unit);
+    const distance = width * (0.03 + 0.07 * ((index * 0.37) % 1)) * (0.4 + t);
+    const side = index % 2 ? 1 : -1;
+    const origin = viewport.width / 2 + side * halfWidth(hit, viewport);
+    context.globalAlpha = Math.max(0, 1 - t) ** 1.5;
+    context.beginPath();
+    context.arc(origin + Math.cos(angle) * distance, hit + Math.sin(angle) * distance, 2.2 * (1 - t * 0.6), 0, Math.PI * 2);
+    context.fill();
+  }
+  context.globalAlpha = 1;
+}
+
+function drawHighway(context, viewport, props, phase, drift, burstStart) {
   const { width, height } = viewport;
   const center = width / 2;
   const top = height * HORIZON;
@@ -47,10 +71,10 @@ function drawHighway(context, viewport, props, phase, celebrationStart) {
     line(context, center + lane * halfWidth(top, viewport), top, center + lane * halfWidth(height, viewport), height);
   }
 
-  // Phase is accumulated only while running, independently of React clock updates.
-  const drift = props.reducedMotion ? 0 : (phase / 3_500) % 1;
+  // Drift is accumulated only while playing, independently of React clock updates.
+  const fretShift = props.reducedMotion ? 0 : (drift / 3_500) % 1;
   for (let fret = 0; fret < 19; fret += 1) {
-    const depth = ((fret + drift) / 19) ** 1.8;
+    const depth = ((fret + fretShift) / 19) ** 1.8;
     const y = top + (height - top) * depth;
     context.strokeStyle = `rgba(160, 191, 206, ${0.1 + depth * 0.23})`;
     context.lineWidth = 1;
@@ -112,7 +136,10 @@ function drawHighway(context, viewport, props, phase, celebrationStart) {
   context.shadowBlur = 20;
   line(context, center - halfWidth(hit, viewport) * 1.07, hit, center + halfWidth(hit, viewport) * 1.07, hit);
 
-  const age = phase - celebrationStart;
+  const age = phase - burstStart;
+  if (props.burst && props.lightning && !props.reducedMotion && age < BURST_MS) {
+    drawSparks(context, viewport, hit, age);
+  }
   if (props.celebrating && props.lightning && !props.reducedMotion && age < 900) {
     context.globalAlpha = Math.max(0, 1 - age / 900);
     context.lineWidth = 2;
@@ -132,19 +159,44 @@ function drawHighway(context, viewport, props, phase, celebrationStart) {
   context.restore();
 }
 
+function HighwayFallback() {
+  // Static stand-in for the Canvas scene: tapered neck, strings, one chord block and the hit line.
+  const strings = [0, 1, 2, 3, 4, 5];
+  return (
+    <div className="canvas-fallback">
+      <svg viewBox="0 0 400 300" role="img" aria-label="Ilustração estática da pista: seis cordas e linha de acerto">
+        <polygon points="165,40 235,40 380,290 20,290" fill="#030b11" fillOpacity=".85" stroke="#35dfff" strokeWidth="2" />
+        {strings.map((string) => {
+          const lane = (string / 5) * 2 - 1;
+          return <line key={string} x1={200 + lane * 60} y1="40" x2={200 + lane * 160} y2="290" stroke="#aac3cb" strokeOpacity=".55" />;
+        })}
+        {[0.2, 0.42, 0.65].map((depth) => (
+          <line key={depth} x1={200 - (35 + 145 * depth)} y1={40 + 250 * depth} x2={200 + (35 + 145 * depth)} y2={40 + 250 * depth} stroke="#a0bfce" strokeOpacity=".3" />
+        ))}
+        <polygon points="177,120 223,120 249,166 151,166" fill="#7d4d14" fillOpacity=".5" stroke="#efb65c" strokeWidth="2" />
+        <text x="200" y="152" textAnchor="middle" fill="#efb65c" fontFamily="Barlow Condensed, sans-serif" fontSize="30" fontWeight="600">Em</text>
+        <line x1="40" y1="215" x2="360" y2="215" stroke="#b5f8ff" strokeWidth="3" />
+      </svg>
+      <p>Pista visual indisponível. Acompanhe os acordes e o retorno de tempo.</p>
+    </div>
+  );
+}
+
 export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visible = true, reducedMotion = false, celebrating = false, lightning = true }) {
   const canvasRef = useRef(null);
   const surface = useRef(null);
   const latest = useRef(null);
   const phase = useRef(0);
+  const drift = useRef(0);
   const celebrationStart = useRef(0);
   const wasCelebrating = useRef(false);
   const [unavailable, setUnavailable] = useState(false);
+  const [burst, setBurst] = useState(false);
   const draw = useRef(() => {});
-  latest.current = { events, elapsedMs, visible, reducedMotion, celebrating, lightning };
+  latest.current = { events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing, burst };
   draw.current = () => {
     if (!surface.current) return;
-    drawHighway(surface.current.context, surface.current.viewport, latest.current, phase.current, celebrationStart.current);
+    drawHighway(surface.current.context, surface.current.viewport, latest.current, phase.current, drift.current, celebrationStart.current);
   };
 
   useEffect(() => {
@@ -168,29 +220,43 @@ export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visib
   }, []);
 
   useEffect(() => {
-    if (celebrating && !wasCelebrating.current) celebrationStart.current = phase.current;
+    if (celebrating && !wasCelebrating.current) {
+      celebrationStart.current = phase.current;
+      setBurst(true);
+    }
     wasCelebrating.current = celebrating;
     draw.current();
   }, [events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing]);
 
+  // Sparks outlive the celebration flag by a beat; keep the frame loop alive for them.
   useEffect(() => {
-    if (!playing || reducedMotion || !surface.current) return;
+    if (!burst) return;
+    const timeout = window.setTimeout(() => setBurst(false), BURST_MS + 50);
+    return () => window.clearTimeout(timeout);
+  }, [burst]);
+
+  useEffect(() => {
+    if (!(playing || burst) || reducedMotion || !surface.current) return;
     let frame;
     let previous;
     function animate(now) {
-      if (previous !== undefined) phase.current += Math.max(0, now - previous);
+      if (previous !== undefined) {
+        const delta = Math.max(0, now - previous);
+        phase.current += delta;
+        if (latest.current.playing) drift.current += delta;
+      }
       previous = now;
       draw.current();
       frame = requestAnimationFrame(animate);
     }
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [playing, reducedMotion]);
+  }, [playing, burst, reducedMotion]);
 
   return (
     <div className="note-highway">
       <canvas ref={canvasRef} aria-label="Pista de seis cordas e linha de acerto" role="img" style={{ display: "block", width: "100%", height: "100%" }} />
-      {unavailable && <p className="canvas-fallback">Pista visual indisponível. Acompanhe os acordes e o retorno de tempo.</p>}
+      {unavailable && <HighwayFallback />}
     </div>
   );
 }

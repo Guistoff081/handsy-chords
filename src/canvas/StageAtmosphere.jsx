@@ -5,7 +5,7 @@ let smokeImage;
 function getSmokeImage() {
   if (!smokeImage) {
     smokeImage = new Image();
-    smokeImage.src = "/assets/smoke-wisp.png";
+    smokeImage.src = `${import.meta.env.BASE_URL}assets/smoke-wisp.png`;
   }
   return smokeImage;
 }

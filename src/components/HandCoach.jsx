@@ -15,7 +15,7 @@ export function HandCoach({ chord = "Em" }) {
         <p className="hand-coach-correction">DEDO 3 · MAIS PERTO DO TRASTE</p>
       </section>
       <figure className="hand-coach-camera amp-panel">
-        <img src="/assets/hand-camera.webp" alt="Mão observada na câmera simulada, com posição a corrigir" />
+        <img src={`${import.meta.env.BASE_URL}assets/hand-camera.webp`} alt="Mão observada na câmera simulada, com posição a corrigir" />
         <figcaption>Câmera simulada · posição observada</figcaption>
       </figure>
     </aside>

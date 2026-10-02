@@ -67,7 +67,7 @@ export function App() {
   }
 
   return (
-    <main className="practice-shell practice-screen" data-playing={state.playing} data-reduced-motion={reducedMotion}>
+    <main className="practice-shell practice-screen" data-playing={state.playing} data-reduced-motion={reducedMotion} data-hand={state.layers.hand}>
       <PerformanceBar
         elapsedMs={state.elapsedMs}
         playing={state.playing}

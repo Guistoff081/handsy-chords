@@ -49,7 +49,22 @@ describe("note highway", () => {
     HTMLCanvasElement.prototype.getContext.mockReturnValue(null);
     render(<NoteHighway {...props} />);
     expect(screen.getByText(/pista visual indisponível/i)).toBeVisible();
+    expect(screen.getByRole("img", { name: /ilustração estática da pista/i })).toBeInTheDocument();
     expect(frames.size).toBe(0);
+  });
+
+  it("animates dissipating sparks while paused and stops once they fade", () => {
+    const { rerender } = render(<NoteHighway {...props} />);
+    rerender(<NoteHighway {...props} celebrating lightning />);
+    expect(frames.size).toBe(1);
+    advanceFrame(0);
+    context.arc.mockClear();
+    advanceFrame(400);
+    expect(context.arc.mock.calls.length).toBeGreaterThan(18);
+    rerender(<NoteHighway {...props} celebrating={false} lightning />);
+    context.arc.mockClear();
+    advanceFrame(900);
+    expect(context.arc).not.toHaveBeenCalled();
   });
 
   it("resizes the backing store in device pixels and removes events but not the hit line", () => {

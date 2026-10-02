@@ -31,6 +31,15 @@ describe("practice screen", () => {
     expect(drawer).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("flags the stage when the hand layer is hidden so the highway can widen", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    const stage = container.querySelector("main");
+    expect(stage).toHaveAttribute("data-hand", "true");
+    await user.click(screen.getByRole("button", { name: "Mão" }));
+    expect(stage).toHaveAttribute("data-hand", "false");
+  });
+
   it("runs the score demo through the score monitor itself", async () => {
     const user = userEvent.setup();
     render(<App />);
