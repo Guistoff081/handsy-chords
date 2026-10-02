@@ -43,7 +43,7 @@ p, h1, h2, figure { margin: 0; }
 .stage-atmosphere { z-index: 1; transition: opacity 200ms; }
 .note-highway { position: absolute; z-index: 2; inset: 0 19%; pointer-events: none; transition: filter 200ms; }
 @media (min-width: 901px) {
-  .practice-shell[data-hand="false"] .note-highway { inset: 0 13%; }
+  .practice-shell[data-hand="false"] .note-highway { inset: 0 15%; }
 }
 .practice-shell[data-playing="false"] .stage-atmosphere { opacity: .62; }
 .practice-shell[data-playing="false"] .note-highway { filter: saturate(.8); }

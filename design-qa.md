@@ -73,4 +73,10 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 - [x] Verify keyboard, toggles, settings, score, lightning, sound opt-in, reduced motion, collapse, and console state.
 - [x] Capture and compare the final browser render against the reference in one combined image.
 
+## Re-check after gap fixes (2026-10-02)
+
+- MÃO hidden widens the highway above 900 px (inset 15%): 983 → 1110 px at 1586 × 992, 635 → 717 px at 1024 × 768. Unchanged at 390 × 844, where the coach is a bottom drawer. The right rail stays clear of the next-chord panel. Evidence: `qa/hand-off-1586x992.png`, `qa/hand-off-1024x768.png`, `qa/hand-off-390x844.png`.
+- `qa/prototype-1586x992.png` recaptured on the current build; console shows no errors or failed requests at the three viewports (empty inline favicon added).
+- Canvas-unavailable SVG fallback and spark burst are covered by unit tests, not by browser captures.
+
 final result: passed
