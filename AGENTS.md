@@ -26,3 +26,7 @@ Fase 1 concluída em 2026-10-02 (modos, HUD discreto, TRILHA esconde a pista int
 3. Eventos `bend-miss`/`strum-miss`, sons em camadas, vaia opcional (CC0, desligada por padrão).
 4. Cena Three.js no Desafio (import dinâmico; fallback Canvas 2D → SVG).
 Cada fase: commit separado, testes, deploy.
+
+## Meta funcional (2026-10-02)
+
+O usuário pediu "finalizar e atualizar o projeto com um protótipo funcional sem ser apenas demo de UI". Arquitetura escolhida: inferência no navegador (opção B; A = Python local + WebRTC via Tailscale + Rails). Entregue: microfone com reconhecimento de acorde julgado contra a pista; câmera com MediaPipe e conferência de dedos. Pendentes: casa/corda por dedo (localizar o braço), bends/strum, sons em camadas e vaia, Three.js no Desafio, celular como câmera, calibração do limiar de dedo dobrado com mãos reais.

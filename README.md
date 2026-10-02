@@ -7,9 +7,14 @@ Protótipo de uma pista de prática de violão no navegador: acordes que descem 
 
 ## Estado
 
-É uma experiência visual. Música, score, timing e análise da mão são **simulados**. Ainda não há captura de câmera ou microfone, reconhecimento de acordes, nem backend.
+A experiência roda inteira no navegador, sem backend, e agora é funcional se você permitir microfone e câmera:
 
-O que existe: pista em Canvas 2D, camadas TRILHA / LETRA / MÃO, score com multiplicador até x4, efeito elétrico com som opcional, fumaça de palco, redução de movimento e layout de desktop a celular. O diagrama de acordes é desenhado por um componente determinístico a partir dos dados musicais.
+- **Microfone:** reconhece o acorde que você toca (Em, G) e o avalia contra a pista: acerto, atraso, acorde errado ou falta.
+- **Câmera:** mostra sua mão com o esqueleto (MediaPipe) e confere quais dedos estão firmes contra os que o acorde exige.
+
+Sem permissão, a música, o score e a análise da mão continuam **simulados**. A música em si não toca: você toca junto com a pista. A conferência de dedos é grossa (dedo dobrado ou não); casa e corda por dedo ainda não existem.
+
+O que existe: modos Aprendizado e Desafio, pista em Canvas 2D, camadas TRILHA / LETRA / MÃO, score com multiplicador até x4, efeito elétrico com som opcional, fumaça de palco, redução de movimento e layout de desktop a celular. O diagrama de acordes é desenhado por um componente determinístico a partir dos dados musicais.
 
 ## Rodando
 
@@ -29,9 +34,13 @@ npm run build      # build de produção (dist/client)
 - `landing/`: página de divulgação.
 - `design-qa.md`, `qa/`: verificação visual contra o conceito aprovado.
 
+## Arquitetura
+
+A análise roda no navegador (inferência no cliente). O motor entrega eventos `{momento, acorde, confiança}` e a sessão os transforma em `hit` / `late` / `miss`; um serviço Python com WebRTC, ou o celular como câmera, pode alimentar o mesmo contrato depois. O modelo da mão e o WASM do MediaPipe vêm de CDN na primeira vez que a câmera é ligada (cerca de 8 MB); os quadros nunca saem do navegador.
+
 ## Próximos passos
 
-Captura pela câmera, reconhecimento de dedos e acorde, feedback de dedilhado e palhetada, e a integração com um backend.
+Localizar o braço para dizer casa e corda por dedo, bends e palhetada, sons e efeitos mais fortes no Desafio (Three.js), e o celular como câmera.
 
 ## Licença
 

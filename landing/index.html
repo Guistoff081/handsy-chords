@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Handsy Chords</title>
-  <meta name="description" content="Protótipo de uma pista de prática de violão no navegador: acordes, letra sincronizada e coach da mão. A câmera real vem a seguir.">
+  <meta name="description" content="Pista de prática de violão no navegador: escuta o acorde que você toca, mostra a letra no tempo e confere seus dedos pela câmera. Protótipo funcional, código aberto.">
   <meta property="og:title" content="Handsy Chords">
-  <meta property="og:description" content="Aprenda violão com uma pista de acordes, letra sincronizada e coach da mão. Protótipo navegável, código aberto.">
-  <meta property="og:image" content="assets/pratica-desktop.webp">
+  <meta property="og:description" content="Toque violão com uma pista de acordes. O app escuta o acorde e confere seus dedos pela câmera, tudo no navegador.">
+  <meta property="og:image" content="assets/pratica-aprendizado.webp">
   <link rel="preload" href="fonts/barlow-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -24,7 +24,7 @@
     <section class="hero">
       <div class="hero-copy">
         <h1>Toque a música.<br>A câmera confere a sua mão.</h1>
-        <p class="lede">Uma pista de prática de violão que mostra o acorde da vez, a letra no tempo certo e onde cada dedo deve ficar. Hoje é um protótipo navegável; o próximo passo é ligar a câmera de verdade.</p>
+        <p class="lede">Uma pista de prática de violão que escuta o acorde que você toca, mostra a letra no tempo certo e confere, pela câmera, quais dedos estão firmes. Roda no navegador, sem instalar nada.</p>
         <p class="actions">
           <a class="btn btn-primary" href="demo/">Abrir o demo</a>
           <a class="btn" href="https://github.com/Guistoff081/handsy-chords">Ver o código</a>
@@ -61,14 +61,26 @@
 
     <section class="shot">
       <figure>
-        <img src="assets/pratica-desktop.webp" width="1586" height="992" alt="Tela de prática: pista de seis cordas no centro, letra de 'Come As You Are' acima, painel de score à esquerda, coach da mão e próximo acorde nas laterais.">
-        <figcaption>A tela de prática em 1586 × 992. A letra, o score e o tempo são simulados.</figcaption>
+        <img src="assets/pratica-aprendizado.webp" width="1586" height="992" alt="Modo Aprendizado: letra de 'Come As You Are' no centro, diagrama do Em à esquerda com a mão ao vivo e o esqueleto sobre os dedos, e o próximo acorde à direita.">
+        <figcaption>Modo Aprendizado com a câmera ligada: o coach mostra a sua mão e aponta os dedos que faltam. A imagem da câmera, aqui, é uma foto de teste.</figcaption>
+      </figure>
+    </section>
+
+    <section class="live">
+      <div class="live-copy">
+        <h2>Toque, e o app escuta</h2>
+        <p>No modo Desafio os acordes descem pela pista até a linha de acerto. Ligue o microfone e toque junto: o app reconhece o acorde e diz se foi no tempo, tarde, cedo ou se era outro acorde.</p>
+        <p>O score começa do zero a cada sessão. Se a permissão for negada, o app explica como liberar e volta para a demonstração simulada.</p>
+      </div>
+      <figure>
+        <img src="assets/pratica-desafio.webp" width="1586" height="992" alt="Modo Desafio com o microfone ligado: o app ouviu Em com 86 por cento de confiança, marcou certo e somou os primeiros cem pontos.">
+        <figcaption>Desafio ouvindo um Em tocado no tempo: "Ouvi Em · 86%", e o primeiro acerto no score.</figcaption>
       </figure>
     </section>
 
     <section class="layers">
       <h2>Três camadas, ligadas como você quiser</h2>
-      <p class="section-lede">Quem está começando precisa de tudo na tela. Quem já domina o acorde quer só a pista. Cada camada liga e desliga sem interromper a música.</p>
+      <p class="section-lede">O modo Aprendizado liga a letra e o coach da mão. O Desafio liga a pista e o score. Dentro de cada modo, cada camada liga e desliga sem interromper a música.</p>
       <dl>
         <div>
           <dt>Trilha</dt>
@@ -80,7 +92,7 @@
         </div>
         <div>
           <dt>Mão</dt>
-          <dd>O coach compara o <strong>alvo</strong> com o que a câmera <strong>observa</strong> e diz qual dedo ajustar.</dd>
+          <dd>O coach compara os dedos que o acorde exige com os que a câmera vê firmes e diz qual falta ou está sobrando.</dd>
         </div>
       </dl>
     </section>
@@ -116,24 +128,25 @@
     </section>
 
     <section class="status">
-      <h2>O que já funciona e o que ainda é de mentira</h2>
+      <h2>O que funciona e o que ainda não</h2>
       <div class="cols">
         <div>
           <h3>Funciona hoje</h3>
           <ul>
-            <li>Pista em Canvas 2D a 92 BPM, com play, pausa e tecla Espaço</li>
-            <li>Camadas Trilha, Letra e Mão, combináveis</li>
-            <li>Score, sequência e multiplicador até x4, com raio e som opcional</li>
-            <li>Fumaça de palco, redução de movimento e som desligado por padrão</li>
-            <li>Layout de desktop a celular, com coach em gaveta abaixo de 900 px</li>
+            <li>Reconhece o acorde pelo microfone e o julga contra a pista, com acerto, atraso, acorde errado e falta</li>
+            <li>Mostra a sua mão pela câmera, com esqueleto, e confere quais dedos estão firmes</li>
+            <li>Modos Aprendizado e Desafio, com camadas Trilha, Letra e Mão</li>
+            <li>Score com multiplicador, efeito elétrico com som opcional e fumaça de palco</li>
+            <li>Tudo roda no navegador: o áudio e a imagem não saem do seu dispositivo</li>
           </ul>
         </div>
         <div>
-          <h3>Simulado por enquanto</h3>
+          <h3>Ainda não</h3>
           <ul>
-            <li>A música, o tempo e os acertos</li>
-            <li>A análise da mão: a foto é fixa e traz o erro que o coach corrige</li>
-            <li>Não há captura de câmera ou microfone, nem reconhecimento de acordes</li>
+            <li>Casa e corda de cada dedo: a conferência diz só se o dedo está dobrado</li>
+            <li>Reconhece só os acordes da música (Em e G). Outro acorde vira o mais parecido</li>
+            <li>A música não toca: você toca junto com a pista</li>
+            <li>Não foi testado em celular nem com a calibração de mãos reais</li>
           </ul>
         </div>
       </div>
@@ -142,21 +155,21 @@
     <section class="next">
       <h2>Para onde vai</h2>
       <ol>
-        <li>Captura pela câmera do celular ou da webcam, servida na rede local.</li>
-        <li>Reconhecimento da posição dos dedos e do acorde tocado.</li>
-        <li>Feedback de casas, bends, dedilhado e palhetada.</li>
-        <li>Integração com um backend. Duas arquiteturas estão em jogo e a ideia é achar o que elas têm em comum.</li>
+        <li>Localizar o braço do violão para dizer a casa e a corda de cada dedo.</li>
+        <li>Bends, palhetada e dedilhado, com sons e efeitos mais fortes no Desafio.</li>
+        <li>O celular como câmera e microfone, com a análise no computador.</li>
+        <li>Mais músicas e acordes, e histórico das sessões.</li>
       </ol>
     </section>
 
     <section class="mobile">
       <figure>
-        <img src="assets/pratica-mobile.webp" width="390" height="844" alt="A tela de prática em um celular, com a pista, o score e a faixa de acordes.">
-        <figcaption>Em 390 px de largura a tela se adapta, mas o celular deve servir como câmera.</figcaption>
+        <img src="assets/pratica-mobile.webp" width="390" height="844" alt="A tela de prática em um celular, com a letra, o seletor de modos e a faixa de acordes.">
+        <figcaption>Em 390 px de largura a tela se adapta. A ideia é o celular virar a câmera.</figcaption>
       </figure>
       <div>
         <h2>Experimente agora</h2>
-        <p>O demo roda no seu navegador. Aperte Espaço para tocar, clique no score para ver o multiplicador subir e abra as configurações para ligar o som.</p>
+        <p>O demo roda no seu navegador. Abra as configurações para ligar o microfone e a câmera, troque entre Aprendizado e Desafio e aperte Espaço para começar. Use fones ou volume baixo para o microfone não ouvir a si mesmo.</p>
         <p class="actions"><a class="btn btn-primary" href="demo/">Abrir o demo</a></p>
       </div>
     </section>

@@ -84,4 +84,10 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 - Learning mode (default) hides the highway, score and timing feedback; lyrics move to the centre. Challenge mode shows the highway and a smaller score HUD at the top right. Mode switch sits at the top left on desktop and under the layer toggles at 640 px and below.
 - Checked at 1586 × 992, 1024 × 768, 640 × 360 and 390 × 844 in both modes: no console errors and no overlap between mode switch, layer toggles, score HUD and lyrics (the 1024 × 768 layer-toggle/lyrics boxes touch by a few pixels only).
 
+## Live input (2026-10-02)
+
+- Microphone and camera are opt-in controls in Settings; refusal, missing device and unsupported browsers fall back to the simulation with a plain message. The live status chip sits under the mode switch (top left; beside it at 640 px and below).
+- The live feed replaces the simulated photo in the coach card, which moved up (17% from the top) and grew so the card and its caption fit at 1586 × 992 and 1024 × 768. Captured with a fake camera in Chromium.
+- Not checked: real hardware, Safari/iPhone, narrow-viewport layout with the live feed open.
+
 final result: passed
