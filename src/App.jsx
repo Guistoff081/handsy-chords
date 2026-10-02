@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CaretUp, Hand } from "@phosphor-icons/react";
 import { playLightningSound, prepareLightningSound } from "./audio/lightningSound.js";
+import { playOutcomeSound } from "./audio/outcomeSounds.js";
 import { useLiveInput } from "./audio/useLiveInput.js";
 import { DEMO_SONG } from "./data/demoSong.js";
 import { NoteHighway } from "./canvas/NoteHighway.jsx";
@@ -89,8 +90,14 @@ export function App() {
     return () => { active = false; };
   }, [dispatch, state.celebrating, state.effects.sound, state.layers.track]);
 
+  // One cue per verdict, only while the verdict is visible (pista or live input).
+  useEffect(() => {
+    if (state.outcome.id === 0 || !state.effects.outcomeSound || !(state.layers.track || live)) return;
+    if (!playOutcomeSound(state.outcome.kind, { boo: state.effects.boo })) dispatch({ type: "sound/unavailable" });
+  }, [state.outcome.id]);
+
   function toggleEffect(effect) {
-    if (effect === "sound" && !state.effects.sound) {
+    if (["sound", "outcomeSound", "boo"].includes(effect) && !state.effects[effect]) {
       prepareLightningSound().then((prepared) => {
         if (!prepared) dispatch({ type: "sound/unavailable" });
       });
@@ -130,6 +137,7 @@ export function App() {
             reducedMotion={reducedMotion}
             celebrating={state.celebrating}
             lightning={state.effects.lightning}
+            failure={["miss", "wrong"].includes(state.outcome.kind) ? state.outcome.id : 0}
           />
         )}
         {state.layers.hand && (
@@ -160,7 +168,7 @@ export function App() {
         />
         {(state.layers.track || live) && (
           <div className="practice-feedback" data-result={isMissFeedback(state.feedback) ? "miss" : state.feedback === "UM POUCO TARDE" || state.feedback === "UM POUCO CEDO" ? "late" : "success"} role="status" aria-live="polite">
-            <span>{state.feedback}</span>
+            <span key={state.outcome.id}>{state.feedback}</span>
             {!isMissFeedback(state.feedback) && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
           </div>
         )}

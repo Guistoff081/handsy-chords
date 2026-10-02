@@ -4,6 +4,11 @@ function disconnect(nodes) {
   nodes.forEach((node) => node.disconnect?.());
 }
 
+/** The context unlocked by an explicit opt-in, or null while sound has not been enabled. */
+export function runningAudioContext() {
+  return audioContext && audioContext.state === "running" ? audioContext : null;
+}
+
 export function prepareLightningSound() {
   const AudioContextConstructor = globalThis.AudioContext ?? globalThis.webkitAudioContext;
   if (!AudioContextConstructor) return Promise.resolve(false);

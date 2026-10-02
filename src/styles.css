@@ -111,6 +111,8 @@ p, h1, h2, figure { margin: 0; }
 .practice-feedback { position: absolute; z-index: 5; top: 75.5%; left: 32%; width: 39%; text-align: center; color: var(--cyan); font: 600 clamp(23px, 2.1vw, 34px) / 1.15 var(--display); letter-spacing: .06em; text-shadow: 0 2px 5px #000, 0 0 12px #003d60; }
 .practice-feedback small { display: block; font-size: .72em; margin-top: 5px; }
 .practice-feedback[data-result="miss"] { color: #ff679d; }
+.practice-feedback[data-result="miss"] > span { display: inline-block; animation: feedback-shake 320ms ease-out; }
+@keyframes feedback-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 .practice-feedback[data-result="late"] { color: var(--amber); }
 .settings-popover { position: absolute; z-index: 30; top: 82px; right: 18px; width: min(320px, calc(100% - 36px)); max-height: calc(100dvh - 100px); overflow-y: auto; padding: 24px; background: #0a1220fa; border: 1px solid #8adce7; box-shadow: 0 10px 32px #000d, inset 0 0 0 5px #141f2b; }
 .settings-popover h3 { margin: 18px 0 4px; font: 600 20px / 1 var(--display); letter-spacing: .04em; color: var(--cyan); }

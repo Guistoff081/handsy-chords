@@ -25,6 +25,8 @@ function band(context, viewport, y1, y2) {
   context.closePath();
 }
 
+const FAIL_MS = 450;
+const MAGENTA = "#ff4f88";
 const SPARK_COUNT = 18;
 const BURST_MS = 800;
 
@@ -49,13 +51,17 @@ function drawSparks(context, viewport, hit, age) {
   context.globalAlpha = 1;
 }
 
-function drawHighway(context, viewport, props, phase, drift, burstStart) {
+function drawHighway(context, viewport, props, phase, drift, burstStart, failStart) {
   const { width, height } = viewport;
   const center = width / 2;
   const top = height * HORIZON;
   const hit = height * HIT_LINE;
   context.clearRect(0, 0, width, height);
   context.save();
+  // A missed or wrong chord shakes the track briefly and turns the hit line magenta; reduced motion keeps only the colour.
+  const failAge = props.failing ? phase - failStart : Infinity;
+  const failed = failAge < FAIL_MS;
+  if (failed && !props.reducedMotion) context.translate(Math.sin(failAge * 0.09) * 7 * (1 - failAge / FAIL_MS), 0);
   const neck = context.createLinearGradient(0, top, 0, height);
   neck.addColorStop(0, "rgba(3, 11, 17, 0.3)");
   neck.addColorStop(1, "rgba(3, 11, 17, 0.94)");
@@ -130,9 +136,9 @@ function drawHighway(context, viewport, props, phase, drift, burstStart) {
   }
 
   // Minimum timing feedback is retained even with TRILHA disabled.
-  context.strokeStyle = "#b5f8ff";
-  context.lineWidth = 3;
-  context.shadowColor = CYAN;
+  context.strokeStyle = failed ? MAGENTA : "#b5f8ff";
+  context.lineWidth = failed ? 5 : 3;
+  context.shadowColor = failed ? MAGENTA : CYAN;
   context.shadowBlur = 20;
   line(context, center - halfWidth(hit, viewport) * 1.07, hit, center + halfWidth(hit, viewport) * 1.07, hit);
 
@@ -182,21 +188,24 @@ function HighwayFallback() {
   );
 }
 
-export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visible = true, reducedMotion = false, celebrating = false, lightning = true }) {
+export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visible = true, reducedMotion = false, celebrating = false, lightning = true, failure = 0 }) {
   const canvasRef = useRef(null);
   const surface = useRef(null);
   const latest = useRef(null);
   const phase = useRef(0);
   const drift = useRef(0);
   const celebrationStart = useRef(0);
+  const failureStart = useRef(0);
+  const lastFailure = useRef(0);
   const wasCelebrating = useRef(false);
   const [unavailable, setUnavailable] = useState(false);
   const [burst, setBurst] = useState(false);
+  const [failing, setFailing] = useState(false);
   const draw = useRef(() => {});
-  latest.current = { events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing, burst };
+  latest.current = { events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing, burst, failing };
   draw.current = () => {
     if (!surface.current) return;
-    drawHighway(surface.current.context, surface.current.viewport, latest.current, phase.current, drift.current, celebrationStart.current);
+    drawHighway(surface.current.context, surface.current.viewport, latest.current, phase.current, drift.current, celebrationStart.current, failureStart.current);
   };
 
   useEffect(() => {
@@ -225,8 +234,19 @@ export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visib
       setBurst(true);
     }
     wasCelebrating.current = celebrating;
+    if (failure && failure !== lastFailure.current) {
+      lastFailure.current = failure;
+      failureStart.current = phase.current;
+      setFailing(true);
+    }
     draw.current();
-  }, [events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing]);
+  }, [events, elapsedMs, visible, reducedMotion, celebrating, lightning, playing, failure, failing]);
+
+  useEffect(() => {
+    if (!failing) return undefined;
+    const timeout = window.setTimeout(() => setFailing(false), FAIL_MS + 30);
+    return () => window.clearTimeout(timeout);
+  }, [failing]);
 
   // Sparks outlive the celebration flag by a beat; keep the frame loop alive for them.
   useEffect(() => {
@@ -236,7 +256,7 @@ export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visib
   }, [burst]);
 
   useEffect(() => {
-    if (!(playing || burst) || reducedMotion || !surface.current) return;
+    if (!(playing || burst || failing) || reducedMotion || !surface.current) return;
     let frame;
     let previous;
     function animate(now) {
@@ -251,7 +271,7 @@ export function NoteHighway({ events = [], elapsedMs = 0, playing = false, visib
     }
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
-  }, [playing, burst, reducedMotion]);
+  }, [playing, burst, failing, reducedMotion]);
 
   return (
     <div className="note-highway">

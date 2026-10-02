@@ -12,13 +12,15 @@ export const createPracticeState = () => ({
   elapsedMs: 74_000,
   mode: "learn",
   layers: { ...MODE_LAYERS.learn },
-  effects: { smoke: true, lightning: true, sound: false, reducedMotion: false, lowStringOnTop: true },
+  effects: { smoke: true, lightning: true, sound: false, reducedMotion: false, lowStringOnTop: true, outcomeSound: false, boo: false },
   score: 24_680,
   streak: 12,
   multiplier: 4,
   timingMs: 18,
   feedback: "NO TEMPO · SOOU LIMPO",
   celebrating: false,
+  // Every verdict gets a new id so effects (sound, flash) can react to each one exactly once.
+  outcome: { id: 0, kind: null },
   settingsOpen: false,
   soundUnavailable: false,
   // Live capture: `enabled` is what the user asked for, `status` what the browser granted.
@@ -102,6 +104,7 @@ export function practiceReducer(state, action) {
         timingMs: action.payload.timingMs,
         feedback: "NO TEMPO · SOOU LIMPO",
         celebrating: multiplier > state.multiplier || state.celebrating,
+        outcome: { id: state.outcome.id + 1, kind: "hit" },
       };
     }
     case "practice/late": {
@@ -115,6 +118,7 @@ export function practiceReducer(state, action) {
         timingMs: action.payload.timingMs,
         feedback: action.payload.timingMs < 0 ? "UM POUCO CEDO" : "UM POUCO TARDE",
         celebrating: multiplier > state.multiplier || state.celebrating,
+        outcome: { id: state.outcome.id + 1, kind: "late" },
       };
     }
     case "practice/miss":
@@ -125,6 +129,7 @@ export function practiceReducer(state, action) {
         multiplier: 1,
         feedback: action.payload?.feedback ?? "AJUSTE O TEMPO",
         celebrating: false,
+        outcome: { id: state.outcome.id + 1, kind: action.payload?.feedback?.startsWith("OUVI ") ? "wrong" : "miss" },
       };
     case "celebration/end":
       return { ...state, celebrating: false };

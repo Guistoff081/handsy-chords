@@ -4,6 +4,8 @@ const EFFECTS = [
   ["smoke", "Fumaça"],
   ["lightning", "Efeito elétrico"],
   ["sound", "Som elétrico"],
+  ["outcomeSound", "Sons de acerto e erro"],
+  ["boo", "Vaia nos erros"],
   ["reducedMotion", "Reduzir movimento"],
   ["lowStringOnTop", "Mi grave em cima nos diagramas"],
 ];

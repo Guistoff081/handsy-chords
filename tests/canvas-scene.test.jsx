@@ -114,6 +114,52 @@ describe("note highway", () => {
   });
 });
 
+describe("failure feedback on the highway", () => {
+  function recordHitLineColors() {
+    const colors = [];
+    context.stroke = vi.fn(function stroke() { colors.push(this.strokeStyle); });
+    return colors;
+  }
+
+  it("shakes the track and turns the hit line magenta for a missed chord, then recovers", () => {
+    const colors = recordHitLineColors();
+    const { rerender } = render(<NoteHighway {...props} failure={0} />);
+    expect(colors).not.toContain("#ff4f88");
+    context.translate.mockClear();
+    rerender(<NoteHighway {...props} failure={1} />);
+    expect(colors).toContain("#ff4f88");
+    advanceFrame(0);
+    advanceFrame(100);
+    expect(context.translate).toHaveBeenCalled();
+    advanceFrame(600);
+    colors.length = 0;
+    advanceFrame(700);
+    expect(colors).not.toContain("#ff4f88");
+  });
+
+  it("keeps only the colour change, without shaking, under reduced motion", () => {
+    const colors = recordHitLineColors();
+    const { rerender } = render(<NoteHighway {...props} reducedMotion failure={0} />);
+    context.translate.mockClear();
+    rerender(<NoteHighway {...props} reducedMotion failure={1} />);
+    expect(colors).toContain("#ff4f88");
+    expect(context.translate).not.toHaveBeenCalled();
+    expect(frames.size).toBe(0);
+  });
+
+  it("reacts once per failure id", () => {
+    recordHitLineColors();
+    const { rerender } = render(<NoteHighway {...props} failure={3} />);
+    advanceFrame(0);
+    advanceFrame(600);
+    advanceFrame(700);
+    context.translate.mockClear();
+    rerender(<NoteHighway {...props} failure={3} elapsedMs={50} />);
+    advanceFrame(800);
+    expect(context.translate).not.toHaveBeenCalled();
+  });
+});
+
 describe("stage atmosphere", () => {
   it("reuses the smoke image, freezes on pause, uses one reduced-motion wisp, and clears when disabled", () => {
     const { rerender, unmount } = render(<StageAtmosphere smoke playing />);
