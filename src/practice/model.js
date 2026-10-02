@@ -12,7 +12,7 @@ export const createPracticeState = () => ({
   elapsedMs: 74_000,
   mode: "learn",
   layers: { ...MODE_LAYERS.learn },
-  effects: { smoke: true, lightning: true, sound: false, reducedMotion: false },
+  effects: { smoke: true, lightning: true, sound: false, reducedMotion: false, lowStringOnTop: true },
   score: 24_680,
   streak: 12,
   multiplier: 4,

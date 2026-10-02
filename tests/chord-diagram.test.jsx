@@ -37,7 +37,7 @@ describe("deterministic chord diagram", () => {
     drawChordDiagram(context, getChord("Em"), { width: 360, height: 220 });
 
     const strings = context.labels.filter(({ text }) => ["e", "B", "G", "D", "A", "E"].includes(text));
-    expect(strings.map(({ text }) => text)).toEqual(["e", "B", "G", "D", "A", "E"]);
+    expect(strings.map(({ text }) => text)).toEqual(["E", "A", "D", "G", "B", "e"]);
     const lines = context.strokes.map(({ path }) => path).filter((path) => path.length === 2);
     const horizontal = lines.filter(([start, end]) => start.y === end.y);
     const vertical = lines.filter(([start, end]) => start.x === end.x);
@@ -56,6 +56,17 @@ describe("deterministic chord diagram", () => {
       expect(observed.path[0].x).toBeGreaterThan(secondFretStart);
     }
     expect(context.fills.filter(({ color }) => color === "#15d9f5")).toHaveLength(2);
+  });
+
+  it("can lay the strings out as in tablature, high e on top, and still place the fingers on the right strings", () => {
+    const context = recordingContext();
+    drawChordDiagram(context, getChord("Em"), { width: 360, height: 220, lowOnTop: false });
+    const rows = context.labels.filter(({ text }) => ["e", "B", "G", "D", "A", "E"].includes(text));
+    expect(rows.map(({ text }) => text)).toEqual(["e", "B", "G", "D", "A", "E"]);
+    for (const [finger, stringName] of [["2", "A"], ["3", "D"]]) {
+      const label = context.labels.find(({ text, y }) => text === finger && y > rows[0].y);
+      expect(label.y).toBe(rows.find(({ text }) => text === stringName).y);
+    }
   });
 
   it("renders accurate G targets without simulated observations in target-only mode", () => {

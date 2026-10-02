@@ -147,13 +147,14 @@ export function App() {
               <CaretUp aria-hidden="true" />
             </button>
             <div className="coach-drawer-content" id="hand-coach-drawer" data-open={coachOpen}>
-              <HandCoach chord={cue.chord} camera={cameraOn ? state.camera : undefined} videoRef={videoRef} overlayRef={overlayRef} />
+              <HandCoach chord={cue.chord} camera={cameraOn ? state.camera : undefined} videoRef={videoRef} overlayRef={overlayRef} lowOnTop={state.effects.lowStringOnTop} />
             </div>
           </div>
         )}
         <NextChordPanel
           cue={cue}
           nextCue={nextCue}
+          lowOnTop={state.effects.lowStringOnTop}
           audioLabel={live && state.input.heard ? `Áudio ${Math.round(state.input.heard.confidence * 100)}%` : undefined}
           handLabel={cameraLive ? (state.camera.present ? `Mão ${Math.round(state.camera.score * 100)}%` : "Mão —") : undefined}
         />

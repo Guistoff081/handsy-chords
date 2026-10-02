@@ -5,6 +5,7 @@ const EFFECTS = [
   ["lightning", "Efeito elétrico"],
   ["sound", "Som elétrico"],
   ["reducedMotion", "Reduzir movimento"],
+  ["lowStringOnTop", "Mi grave em cima nos diagramas"],
 ];
 
 export function SettingsPopover({ effects, onToggle, soundUnavailable = false, input, onToggleInput, camera, onToggleCamera }) {

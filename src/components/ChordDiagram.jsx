@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
-export function drawChordDiagram(context, chord, { width, height, showObserved = true }) {
+// `lowOnTop`: the low E string is the top row, as the strings sit on the guitar; false gives the tablature layout (high e on top).
+export function drawChordDiagram(context, chord, { width, height, showObserved = true, lowOnTop = true }) {
   if (!context || width <= 0 || height <= 0) return;
 
   const left = width * 0.18;
@@ -10,7 +11,7 @@ export function drawChordDiagram(context, chord, { width, height, showObserved =
   const fretWidth = (right - left) / 3;
   const stringSpacing = (bottom - top) / 5;
   const radius = Math.min(fretWidth * 0.12, stringSpacing * 0.36);
-  const strings = [...chord.strings].reverse();
+  const strings = lowOnTop ? chord.strings : [...chord.strings].reverse();
 
   context.save();
   context.clearRect(0, 0, width, height);
@@ -83,7 +84,7 @@ function describeChord(chord) {
   return `Acorde ${chord.name}: ${fingers}; demais cordas soltas.`;
 }
 
-export function ChordDiagram({ chord, width = 360, height = 220, showObserved = true }) {
+export function ChordDiagram({ chord, width = 360, height = 220, showObserved = true, lowOnTop = true }) {
   const canvasRef = useRef(null);
   const [unavailable, setUnavailable] = useState(false);
   const description = describeChord(chord);
@@ -101,7 +102,7 @@ export function ChordDiagram({ chord, width = 360, height = 220, showObserved = 
       canvas.width = Math.round(displayWidth * ratio);
       canvas.height = Math.round(displayHeight * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      drawChordDiagram(context, chord, { width: displayWidth, height: displayHeight, showObserved });
+      drawChordDiagram(context, chord, { width: displayWidth, height: displayHeight, showObserved, lowOnTop });
     }
 
     redraw();
@@ -112,7 +113,7 @@ export function ChordDiagram({ chord, width = 360, height = 220, showObserved = 
       observer?.disconnect();
       window.removeEventListener("resize", redraw);
     };
-  }, [chord, width, height, showObserved]);
+  }, [chord, width, height, showObserved, lowOnTop]);
 
   return (
     <div className="chord-diagram">

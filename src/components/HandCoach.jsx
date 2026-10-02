@@ -12,7 +12,7 @@ function liveCorrection(camera, target) {
   return { text: describeComparison(comparison), tone: comparison.status === "ok" ? "ok" : "fix" };
 }
 
-export function HandCoach({ chord = "Em", camera = CAMERA_OFF, videoRef, overlayRef }) {
+export function HandCoach({ chord = "Em", camera = CAMERA_OFF, videoRef, overlayRef, lowOnTop = true }) {
   const target = CHORDS[chord];
   const live = camera.enabled;
   const correction = live ? liveCorrection(camera, target) : { text: "DEDO 3 · MAIS PERTO DO TRASTE", tone: "fix" };
@@ -21,7 +21,7 @@ export function HandCoach({ chord = "Em", camera = CAMERA_OFF, videoRef, overlay
     <aside className="hand-coach" aria-label="Orientação de mão">
       <section className="hand-coach-monitor amp-panel" aria-label={`Posição alvo de ${target.name}`}>
         <h2 className="hand-coach-chord">{target.name}</h2>
-        <ChordDiagram chord={target} showObserved={!live} />
+        <ChordDiagram chord={target} showObserved={!live} lowOnTop={lowOnTop} />
         <div className="hand-coach-legend">
           <span className="hand-coach-target"><i aria-hidden="true" />ALVO</span>
           {!live && <span className="hand-coach-observed"><i aria-hidden="true" />AGORA</span>}
