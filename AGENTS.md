@@ -34,3 +34,7 @@ O usuário pediu "finalizar e atualizar o projeto com um protótipo funcional se
 ## Orientação das cordas (2026-10-02)
 
 Os diagramas de acorde mostram o Mi grave em cima (ordem E A D G B e de cima para baixo), como as cordas ficam no violão do usuário; confirmado por ele. O formato de tablatura (e agudo em cima) segue disponível em Configurações. A pista (colunas E A D G B e da esquerda para a direita) não foi alterada e não houve reclamação sobre ela.
+
+## Precisão da mão (2026-10-02)
+
+Pedido do usuário: mais precisão no scanner da mão (dedos e casas) e feedback melhor. Implementado por calibração guiada com o G (`src/vision/fretboard.js`, `fingerCheck.js`, `coachEngine.js`): grade afim do braço com casas em temperamento igual, localização por dedo, feedback textual por dedo e marcas pulsantes. Fora da calibração mantém a conferência de dedos dobrados. Validado só com geometria sintética e no navegador com uma foto (que a checagem recusou); precisa de teste com violão real. Limites: câmera e violão parados, câmera razoavelmente de frente, perspectiva ignorada.

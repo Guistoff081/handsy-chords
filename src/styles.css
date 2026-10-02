@@ -92,8 +92,29 @@ p, h1, h2, figure { margin: 0; }
 .hand-coach-correction { color: #ff679d; font: 600 clamp(19px, 1.85vw, 30px) / 1.1 var(--display); text-align: center; }
 .hand-coach-camera { position: relative; width: 90%; margin-top: -4%; margin-left: 1%; padding: 16px 14px 10px; transform: rotate(-7deg); }
 .hand-coach-feed { position: relative; transform: scaleX(-1); }
-.hand-coach-feed video, .hand-coach-feed canvas { display: block; width: 100%; aspect-ratio: 4 / 3; max-height: 26vh; object-fit: cover; border: 2px solid var(--cyan); border-radius: 3px; background: #04070c; }
+.hand-coach-feed video, .hand-coach-feed canvas { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 24vh; object-fit: cover; border: 2px solid var(--cyan); border-radius: 3px; background: #04070c; }
 .hand-coach-feed canvas { position: absolute; inset: 0; height: 100%; border-color: transparent; background: none; }
+.hand-coach[data-live="true"] .hand-coach-monitor { padding: 14px 22px 12px; }
+.hand-coach[data-live="true"] .hand-coach-chord { font-size: clamp(28px, 2.4vw, 40px); margin-bottom: 0; }
+.hand-coach[data-live="true"] .hand-coach-monitor .chord-diagram { max-width: 250px; margin-inline: auto; }
+.hand-coach[data-live="true"] .hand-coach-legend { margin: 2px 0 6px; font-size: 15px; }
+.hand-coach[data-live="true"] .hand-coach-correction { font-size: clamp(16px, 1.35vw, 22px); }
+.hand-coach[data-live="true"] .hand-coach-feed video, .hand-coach[data-live="true"] .hand-coach-feed canvas { max-height: 19vh; }
+.hand-coach[data-live="true"] .hand-coach-camera { padding-block: 12px 8px; }
+.finger-feedback { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; line-height: 1.3; }
+.finger-feedback li { display: flex; gap: 8px; align-items: flex-start; }
+.finger-feedback svg { flex: none; width: 15px; height: 15px; margin-top: 2px; }
+.finger-feedback li[data-status="ok"] { color: var(--cyan); }
+.finger-feedback li[data-status="far-from-fret"], .finger-feedback li[data-status="on-fret"] { color: var(--amber); }
+.finger-feedback li[data-status^="wrong"], .finger-feedback li[data-status="lifted"] { color: #ff679d; }
+.calibration { margin-top: 10px; padding-top: 8px; border-top: 1px solid #2a3342; font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.calibration p { margin: 0 0 6px; }
+.calibration strong { color: var(--ink); }
+.calibration button { min-height: 32px; padding: 0 14px; border: 1px solid #626d80; border-radius: 2px; background: #0d1219; font: 600 15px / 1 var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--cyan); }
+.calibration button:hover:not(:disabled) { border-color: var(--cyan); }
+.calibration button:disabled { opacity: .45; cursor: not-allowed; }
+.calibration progress { display: block; width: 100%; height: 6px; margin-bottom: 8px; accent-color: var(--cyan); }
+.calibration[data-status="failed"] p { color: #ff679d; }
 .hand-coach-correction[data-tone="ok"] { color: var(--cyan); }
 .hand-coach-correction[data-tone="wait"] { color: var(--muted); }
 .hand-coach-camera img { display: block; width: 100%; max-height: 21vh; aspect-ratio: 1.8; object-fit: cover; border: 2px solid #d45088; border-radius: 3px; }

@@ -53,13 +53,13 @@ function recordingCanvas() {
     clearRect: vi.fn(), beginPath() {}, moveTo() {}, lineTo() {}, arc() {},
     fill() { fills.push(this.fillStyle); }, stroke() { strokes.push(this.strokeStyle); },
   };
-  return { width: 640, height: 480, getContext: () => context, context, fills, strokes };
+  return { width: 1280, height: 720, getContext: () => context, context, fills, strokes };
 }
 
 const nextFrame = (video) => { video.currentTime += 0.033; act(() => { const pending = [...frames.values()]; frames.clear(); pending.forEach((cb) => cb()); }); };
 
 function setup(props = {}) {
-  const video = { srcObject: null, play: vi.fn(() => Promise.resolve()), readyState: 4, currentTime: 0, videoWidth: 640, videoHeight: 480 };
+  const video = { srcObject: null, play: vi.fn(() => Promise.resolve()), readyState: 4, currentTime: 0, videoWidth: 1280, videoHeight: 720 };
   const overlay = recordingCanvas();
   const onStatus = vi.fn(); const onHand = vi.fn();
   const hook = renderHook((p) => useHandTracking({ enabled: true, videoRef: { current: video }, overlayRef: { current: overlay }, expectedFingers: [2, 3], onStatus, onHand, ...p }), { initialProps: props });
@@ -72,7 +72,7 @@ describe("hand tracking hook", () => {
     const { onStatus } = setup();
     await waitFor(() => expect(onStatus).toHaveBeenCalledWith("ready"));
     expect(onStatus.mock.calls.map(([s]) => s)).toEqual(["requesting", "loading", "ready"]);
-    expect(cam.getUserMedia).toHaveBeenCalledWith({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } });
+    expect(cam.getUserMedia).toHaveBeenCalledWith({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } });
     expect(mp.resolve).toHaveBeenCalledWith(VISION_WASM_URL);
     expect(mp.create).toHaveBeenCalledWith({ fileset: true }, { baseOptions: { modelAssetPath: HAND_MODEL_URL, delegate: "CPU" }, runningMode: "VIDEO", numHands: 1 });
   });
@@ -152,6 +152,56 @@ describe("hand tracking hook", () => {
   });
 });
 
+describe("hand tracking with the coach engine", () => {
+  const snapshotOf = (calibrated) => ({ calibrated, calibration: { status: calibrated ? "ready" : "none", progress: 0, message: "" }, fingers: [], summary: "" });
+  const fakeEngine = (calibrated = false) => ({ process: vi.fn(), draw: vi.fn(), snapshot: vi.fn(() => snapshotOf(calibrated)) });
+
+  it("hands the engine the fingertips in pixels, every frame, and merges its snapshot into the report", async () => {
+    stubCamera();
+    const engine = fakeEngine();
+    const { video, onHand, onStatus } = setup({ engine });
+    await waitFor(() => expect(onStatus).toHaveBeenCalledWith("ready"));
+    mp.result = handResult([2, 3]);
+    nextFrame(video);
+    const frameArg = engine.process.mock.calls[0][0];
+    expect(frameArg).toMatchObject({ present: true, pressed: [2, 3], size: { width: 1280, height: 720 } });
+    expect(frameArg.angles[2]).toBeCloseTo(95, 0);
+    expect(frameArg.angles[1]).toBeCloseTo(180, 0);
+    const lm = mp.result.landmarks[0];
+    expect(frameArg.tips[2]).toEqual({ x: lm[12].x * 1280, y: lm[12].y * 720 });
+    expect(frameArg.tips[4]).toEqual({ x: lm[20].x * 1280, y: lm[20].y * 720 });
+    expect(onHand).toHaveBeenCalledWith(expect.objectContaining({ present: true, pressed: [2, 3], calibrated: false, calibration: { status: "none", progress: 0, message: "" } }));
+    nextFrame(video);
+    expect(engine.process).toHaveBeenCalledTimes(2);
+    expect(engine.draw).toHaveBeenCalledTimes(2);
+  });
+
+  it("still tells the engine when no hand is visible", async () => {
+    stubCamera();
+    const engine = fakeEngine();
+    const { video, onStatus } = setup({ engine });
+    await waitFor(() => expect(onStatus).toHaveBeenCalledWith("ready"));
+    nextFrame(video);
+    expect(engine.process).toHaveBeenCalledWith({ present: false, pressed: [], tips: {}, size: { width: 1280, height: 720 } });
+  });
+
+  it("drops the generic fingertip marks once the neck is calibrated, leaving the engine's cell rings", async () => {
+    stubCamera();
+    mp.result = handResult([2, 3]);
+    const plain = setup({ engine: fakeEngine(false) });
+    await waitFor(() => expect(plain.onStatus).toHaveBeenCalledWith("ready"));
+    nextFrame(plain.video);
+    const markedFills = plain.overlay.fills.filter((c) => c === "#38d6e8").length;
+    cleanup();
+    stubCamera();
+    const calibrated = setup({ engine: fakeEngine(true) });
+    await waitFor(() => expect(calibrated.onStatus).toHaveBeenCalledWith("ready"));
+    nextFrame(calibrated.video);
+    expect(markedFills).toBeGreaterThan(0);
+    expect(calibrated.overlay.fills.filter((c) => c === "#38d6e8")).toHaveLength(0);
+  });
+});
+
 describe("hand overlay", () => {
   it("marks needed fingers that press in cyan, needed ones that do not in magenta, and surplus ones in amber", () => {
     const canvas = recordingCanvas();
@@ -164,8 +214,66 @@ describe("hand overlay", () => {
   it("only clears the canvas when no hand is visible", () => {
     const canvas = recordingCanvas();
     drawHand(canvas, undefined, { pressed: [], expected: [2, 3] });
-    expect(canvas.context.clearRect).toHaveBeenCalledWith(0, 0, 640, 480);
+    expect(canvas.context.clearRect).toHaveBeenCalledWith(0, 0, 1280, 720);
     expect(canvas.fills).toHaveLength(0);
+  });
+});
+
+describe("calibration controls in the coach", () => {
+  const base = { enabled: true, status: "ready", present: true, score: 0.9, pressed: [2, 3], calibrated: false, calibration: { status: "none", progress: 0, message: "" }, fingers: [], summary: "" };
+
+  it("invites the person to calibrate with a G, and starts when asked", async () => {
+    const user = userEvent.setup();
+    const onCalibrate = vi.fn();
+    render(<HandCoach chord="Em" camera={base} onCalibrate={onCalibrate} />);
+    expect(screen.getByText(/calibre o braço/i)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Calibrar braço" }));
+    expect(onCalibrate).toHaveBeenCalledTimes(1);
+  });
+
+  it("cannot calibrate until a hand is in view", () => {
+    render(<HandCoach chord="Em" camera={{ ...base, present: false }} onCalibrate={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Calibrar braço" })).toBeDisabled();
+  });
+
+  it("shows progress while reading and lets the person cancel", async () => {
+    const user = userEvent.setup();
+    const onCancel = vi.fn();
+    render(<HandCoach chord="Em" camera={{ ...base, calibration: { status: "collecting", progress: 0.5, message: "" } }} onCalibrate={vi.fn()} onCancelCalibration={onCancel} />);
+    expect(screen.getByRole("progressbar", { name: "Leitura do braço" })).toHaveValue(50);
+    await user.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+
+  it("explains a failed reading and offers another try", () => {
+    render(<HandCoach chord="Em" camera={{ ...base, calibration: { status: "failed", progress: 0, message: "Gire o violão para o braço ficar de frente para a câmera e tente de novo." } }} onCalibrate={vi.fn()} />);
+    expect(screen.getByText(/Gire o violão/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Tentar de novo" })).toBeVisible();
+  });
+
+  it("lists what each finger is doing once calibrated, and leads with the first problem", () => {
+    const fingers = [
+      { finger: 2, status: "ok", message: "Dedo 2 · corda A, casa 2", target: { string: 1, fret: 2 } },
+      { finger: 3, status: "wrong-string", message: "Dedo 3 · está em G2. Leve para a corda D (mais grave)", target: { string: 2, fret: 2 } },
+    ];
+    render(<HandCoach chord="Em" camera={{ ...base, calibrated: true, calibration: { status: "ready", progress: 1, message: "" }, fingers, summary: "DEDO 3 · ESTÁ EM G2. LEVE PARA A CORDA D (MAIS GRAVE)" }} onCalibrate={vi.fn()} />);
+    const list = screen.getByRole("list", { name: "Conferência por dedo" });
+    expect(list.querySelectorAll("li")).toHaveLength(2);
+    expect(list.querySelector('li[data-status="ok"]')).toHaveTextContent("Dedo 2 · corda A, casa 2");
+    expect(screen.getByText("DEDO 3 · ESTÁ EM G2. LEVE PARA A CORDA D (MAIS GRAVE)")).toHaveAttribute("data-tone", "fix");
+    expect(screen.getByRole("button", { name: "Recalibrar" })).toBeVisible();
+  });
+
+  it("marks the summary as right when every finger is on its cell", () => {
+    const fingers = [{ finger: 2, status: "ok", message: "Dedo 2 · corda A, casa 2", target: { string: 1, fret: 2 } }];
+    render(<HandCoach chord="Em" camera={{ ...base, calibrated: true, calibration: { status: "ready", progress: 1, message: "" }, fingers, summary: "CASAS E CORDAS CERTAS" }} onCalibrate={vi.fn()} />);
+    expect(screen.getByText("CASAS E CORDAS CERTAS")).toHaveAttribute("data-tone", "ok");
+  });
+
+  it("falls back to the bent-finger check before calibration", () => {
+    render(<HandCoach chord="Em" camera={{ ...base, pressed: [2] }} onCalibrate={vi.fn()} />);
+    expect(screen.getByText("FALTA O DEDO 3")).toBeVisible();
+    expect(screen.queryByRole("list", { name: "Conferência por dedo" })).toBeNull();
   });
 });
 

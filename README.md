@@ -10,9 +10,9 @@ Protótipo de uma pista de prática de violão no navegador: acordes que descem 
 A experiência roda inteira no navegador, sem backend, e agora é funcional se você permitir microfone e câmera:
 
 - **Microfone:** reconhece o acorde que você toca (Em, G) e o avalia contra a pista: acerto, atraso, acorde errado ou falta.
-- **Câmera:** mostra sua mão com o esqueleto (MediaPipe) e confere quais dedos estão firmes contra os que o acorde exige.
+- **Câmera:** mostra sua mão com o esqueleto (MediaPipe) e confere quais dedos estão firmes. Depois de uma calibração (faça o G e segure parado), localiza cada dedo na grade do braço e diz a corda, a casa e para onde mover.
 
-Sem permissão, a música, o score e a análise da mão continuam **simulados**. A música em si não toca: você toca junto com a pista. A conferência de dedos é grossa (dedo dobrado ou não); casa e corda por dedo ainda não existem.
+Sem permissão, a música, o score e a análise da mão continuam **simulados**. A música em si não toca: você toca junto com a pista. A localização por casa e corda foi validada com geometria sintética e precisa ser testada num violão real; ela assume câmera e violão parados (recalibre se mexerem).
 
 O que existe: modos Aprendizado e Desafio, pista em Canvas 2D, camadas TRILHA / LETRA / MÃO, score com multiplicador até x4, efeito elétrico com som opcional, fumaça de palco, redução de movimento e layout de desktop a celular. O diagrama de acordes é desenhado por um componente determinístico a partir dos dados musicais.
 
@@ -40,7 +40,7 @@ A análise roda no navegador (inferência no cliente). O motor entrega eventos `
 
 ## Próximos passos
 
-Localizar o braço para dizer casa e corda por dedo, bends e palhetada, sons e efeitos mais fortes no Desafio (Three.js), e o celular como câmera.
+Validar e refinar a casa e corda por dedo com violões reais, bends e palhetada, sons e efeitos mais fortes no Desafio (Three.js), e o celular como câmera.
 
 ## Licença
 

@@ -12,7 +12,7 @@ const AMBER = "#f4b942";
  * cyan = needed and pressing, magenta ring = needed but not pressing, amber = pressing but not needed.
  * `landmarks` are normalised image coordinates (0..1).
  */
-export function drawHand(canvas, landmarks, { pressed = [], expected = [] } = {}) {
+export function drawHand(canvas, landmarks, { pressed = [], expected = [], marks = true } = {}) {
   const context = canvas?.getContext?.("2d");
   if (!context) return;
   const { width, height } = canvas;
@@ -38,6 +38,7 @@ export function drawHand(canvas, landmarks, { pressed = [], expected = [] } = {}
     context.fill();
   });
 
+  if (!marks) return;
   const radius = Math.max(7, width / 48);
   Object.entries(TIPS).forEach(([finger, index]) => {
     const number = Number(finger);

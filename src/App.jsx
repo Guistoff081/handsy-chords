@@ -18,6 +18,7 @@ import { SettingsPopover } from "./components/SettingsPopover.jsx";
 import { usePracticeSession } from "./practice/usePracticeSession.js";
 import { getChord } from "./data/chords.js";
 import { fingersForChord } from "./vision/handMetrics.js";
+import { createCoachEngine } from "./vision/coachEngine.js";
 import { useHandTracking } from "./vision/useHandTracking.js";
 
 function isInteractiveOrEditable(target) {
@@ -55,11 +56,19 @@ export function App() {
   // The camera only runs while the coach card (which holds the video) is on screen.
   const cameraOn = state.camera.enabled && state.layers.hand;
   const cameraLive = cameraOn && state.camera.status === "ready";
+  // Knows where the neck is once calibrated; lives outside React because it runs on every video frame.
+  const coachRef = useRef(null);
+  if (coachRef.current === null) coachRef.current = createCoachEngine({ chord: cue.chord });
+  const refreshCoach = () => dispatch({ type: "camera/hand", payload: coachRef.current.snapshot() });
+  useEffect(() => { coachRef.current.setChord(cue.chord); }, [cue.chord]);
+  // A new camera session means the guitar or the camera may have moved: calibrate again.
+  useEffect(() => { if (!cameraOn) coachRef.current.clearCalibration(); }, [cameraOn]);
   useHandTracking({
     enabled: cameraOn,
     videoRef,
     overlayRef,
     expectedFingers: fingersForChord(getChord(cue.chord)),
+    engine: coachRef.current,
     onStatus: (status) => dispatch({ type: "camera/status", payload: { status } }),
     onHand: (hand) => dispatch({ type: "camera/hand", payload: hand }),
   });
@@ -155,7 +164,9 @@ export function App() {
               <CaretUp aria-hidden="true" />
             </button>
             <div className="coach-drawer-content" id="hand-coach-drawer" data-open={coachOpen}>
-              <HandCoach chord={cue.chord} camera={cameraOn ? state.camera : undefined} videoRef={videoRef} overlayRef={overlayRef} lowOnTop={state.effects.lowStringOnTop} />
+              <HandCoach chord={cue.chord} camera={cameraOn ? state.camera : undefined} videoRef={videoRef} overlayRef={overlayRef} lowOnTop={state.effects.lowStringOnTop}
+                onCalibrate={() => { coachRef.current.startCalibration(); refreshCoach(); }}
+                onCancelCalibration={() => { coachRef.current.cancelCalibration(); refreshCoach(); }} />
             </div>
           </div>
         )}
