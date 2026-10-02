@@ -79,4 +79,9 @@ Responsive iteration evidence: `qa/comparison-responsive-iterations.png` (before
 - `qa/prototype-1586x992.png` recaptured on the current build; console shows no errors or failed requests at the three viewports (empty inline favicon added).
 - Canvas-unavailable SVG fallback and spark burst are covered by unit tests, not by browser captures.
 
+## Modes and score HUD (2026-10-02)
+
+- Learning mode (default) hides the highway, score and timing feedback; lyrics move to the centre. Challenge mode shows the highway and a smaller score HUD at the top right. Mode switch sits at the top left on desktop and under the layer toggles at 640 px and below.
+- Checked at 1586 × 992, 1024 × 768, 640 × 360 and 390 × 844 in both modes: no console errors and no overlap between mode switch, layer toggles, score HUD and lyrics (the 1024 × 768 layer-toggle/lyrics boxes touch by a few pixels only).
+
 final result: passed

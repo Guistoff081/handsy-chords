@@ -7,6 +7,7 @@ import { StageAtmosphere } from "./canvas/StageAtmosphere.jsx";
 import { HandCoach } from "./components/HandCoach.jsx";
 import { LayerControls } from "./components/LayerControls.jsx";
 import { LyricsLayer } from "./components/LyricsLayer.jsx";
+import { ModeSwitch } from "./components/ModeSwitch.jsx";
 import { NextChordPanel } from "./components/NextChordPanel.jsx";
 import { PerformanceBar } from "./components/PerformanceBar.jsx";
 import { ScoreHud } from "./components/ScoreHud.jsx";
@@ -49,13 +50,13 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (!state.effects.sound || !state.celebrating) return;
+    if (!state.effects.sound || !state.celebrating || !state.layers.track) return;
     let active = true;
     playLightningSound().then((played) => {
       if (active && !played) dispatch({ type: "sound/unavailable" });
     });
     return () => { active = false; };
-  }, [dispatch, state.celebrating, state.effects.sound]);
+  }, [dispatch, state.celebrating, state.effects.sound, state.layers.track]);
 
   function toggleEffect(effect) {
     if (effect === "sound" && !state.effects.sound) {
@@ -67,7 +68,7 @@ export function App() {
   }
 
   return (
-    <main className="practice-shell practice-screen" data-playing={state.playing} data-reduced-motion={reducedMotion} data-hand={state.layers.hand}>
+    <main className="practice-shell practice-screen" data-playing={state.playing} data-reduced-motion={reducedMotion} data-hand={state.layers.hand} data-track={state.layers.track} data-mode={state.mode}>
       <PerformanceBar
         elapsedMs={state.elapsedMs}
         playing={state.playing}
@@ -82,18 +83,23 @@ export function App() {
           layers={state.layers}
           onToggle={(layer) => dispatch({ type: "layer/toggle", payload: { layer } })}
         />
-        <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} onDemonstrate={triggerScoreDemo} celebrating={state.celebrating} />
+        <ModeSwitch mode={state.mode} onChange={(mode) => dispatch({ type: "mode/set", payload: { mode } })} />
+        {state.layers.track && (
+          <ScoreHud multiplier={state.multiplier} score={state.score} streak={state.streak} onDemonstrate={triggerScoreDemo} celebrating={state.celebrating} />
+        )}
         {state.layers.lyrics && <LyricsLayer cue={cue} />}
         <p className="simulation-label">{DEMO_SONG.excerpt.label}</p>
-        <NoteHighway
-          events={DEMO_SONG.events}
-          elapsedMs={state.elapsedMs}
-          playing={state.playing}
-          visible={state.layers.track}
-          reducedMotion={reducedMotion}
-          celebrating={state.celebrating}
-          lightning={state.effects.lightning}
-        />
+        {state.layers.track && (
+          <NoteHighway
+            events={DEMO_SONG.events}
+            elapsedMs={state.elapsedMs}
+            playing={state.playing}
+            visible
+            reducedMotion={reducedMotion}
+            celebrating={state.celebrating}
+            lightning={state.effects.lightning}
+          />
+        )}
         {state.layers.hand && (
           <div className="coach-drawer" data-open={coachOpen}>
             <button
@@ -114,10 +120,12 @@ export function App() {
           </div>
         )}
         <NextChordPanel cue={cue} nextCue={nextCue} />
-        <div className="practice-feedback" data-result={state.feedback === "AJUSTE O TEMPO" ? "miss" : state.feedback === "UM POUCO TARDE" ? "late" : "success"} role="status" aria-live="polite">
-          <span>{state.feedback}</span>
-          {state.feedback !== "AJUSTE O TEMPO" && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
-        </div>
+        {state.layers.track && (
+          <div className="practice-feedback" data-result={state.feedback === "AJUSTE O TEMPO" ? "miss" : state.feedback === "UM POUCO TARDE" ? "late" : "success"} role="status" aria-live="polite">
+            <span>{state.feedback}</span>
+            {state.feedback !== "AJUSTE O TEMPO" && <small>{state.timingMs > 0 ? "+" : ""}{state.timingMs} ms</small>}
+          </div>
+        )}
         <p className="landscape-hint">Use a tela principal em modo paisagem para a experiência completa.</p>
       </section>
 

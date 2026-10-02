@@ -40,9 +40,33 @@ describe("practice screen", () => {
     expect(stage).toHaveAttribute("data-hand", "false");
   });
 
+  it("starts in learning mode without track, score or timing feedback, and Desafio brings them back", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    expect(screen.getByRole("button", { name: "Aprendizado" })).toHaveAttribute("aria-pressed", "true");
+    expect(container.querySelector("canvas[aria-label*='Pista']")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Pontuação" })).toBeNull();
+    expect(screen.queryByText(/NO TEMPO/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Mão" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "Desafio" }));
+    expect(container.querySelector("canvas[aria-label*='Pista']")).not.toBeNull();
+    expect(screen.getByRole("region", { name: "Pontuação" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Mão" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("hides the whole track and score again when TRILHA is switched off in Desafio", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<App />);
+    await user.click(screen.getByRole("button", { name: "Desafio" }));
+    await user.click(screen.getByRole("button", { name: "Trilha" }));
+    expect(container.querySelector("canvas[aria-label*='Pista']")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Pontuação" })).toBeNull();
+  });
+
   it("runs the score demo through the score monitor itself", async () => {
     const user = userEvent.setup();
     render(<App />);
+    await userEvent.click(screen.getByRole("button", { name: "Desafio" }));
     const score = screen.getByRole("region", { name: "Pontuação" });
     await user.click(within(score).getByRole("button", { name: "Demonstrar multiplicador" }));
     expect(within(score).getByText("24 ACERTOS")).toBeVisible();
@@ -93,6 +117,7 @@ describe("practice screen", () => {
   it("runs the score demonstration without enabling sound automatically", async () => {
     const user = userEvent.setup();
     render(<App />);
+    await userEvent.click(screen.getByRole("button", { name: "Desafio" }));
 
     await user.click(screen.getByRole("button", { name: "Demonstrar multiplicador" }));
 
@@ -105,6 +130,7 @@ describe("practice screen", () => {
   it("keeps sound opt-in independent from the visual lightning setting", async () => {
     const user = userEvent.setup();
     render(<App />);
+    await userEvent.click(screen.getByRole("button", { name: "Desafio" }));
 
     await user.click(screen.getByRole("button", { name: "Configurações" }));
     await user.click(screen.getByRole("checkbox", { name: "Efeito elétrico" }));
@@ -119,6 +145,7 @@ describe("practice screen", () => {
     vi.mocked(playLightningSound).mockResolvedValueOnce(false);
     const user = userEvent.setup();
     render(<App />);
+    await userEvent.click(screen.getByRole("button", { name: "Desafio" }));
 
     await user.click(screen.getByRole("button", { name: "Configurações" }));
     await user.click(screen.getByRole("checkbox", { name: "Som elétrico" }));

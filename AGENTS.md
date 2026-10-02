@@ -17,7 +17,9 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Passo 3 (efeitos): fumaça, efeitos visuais e sons quase imperceptíveis; pouca relevância para um modo desafio. Ideias do usuário: sons melhores, efeitos de falha de bend e strum, vaias nos erros, animação melhor com Three.js. Proposta (aguardando confirmação): (1) modos + HUD discreto; (2) eventos `bend-miss`/`strum-miss`, sons em camadas (Web Audio) e vaia opcional, desligada por padrão, só no Desafio, amostra CC0; (3) cena Three.js só no Desafio, com import dinâmico e fallback Canvas 2D → SVG estático. Tremor/flash respeitam reduzir movimento.
 - Passo 4 (coach): a parte mais no ponto. Pedidos: melhorar transições; efeitos animados (pulsar) nas posições erradas para chamar atenção; o card da mão na câmera parece baixo e pouco relevante: ou mais discreto, ou com utilidade além da conferência visual (matching com o card coach e a prévia). Proposta: sobrepor à foto os contornos do alvo e um marcador pulsante no dedo errado (posições marcadas à mão, a foto é simulada), subir/ampliar o card; crossfade na troca de acorde e deslize do ponto observado → alvo; reduzir movimento troca pulso por opacidade.
 
-## Plano pós-avaliação (aguardando go)
+## Plano pós-avaliação
+
+Fase 1 concluída em 2026-10-02 (modos, HUD discreto, TRILHA esconde a pista inteira). Propostas dos passos 2 a 4 confirmadas pelo usuário.
 
 1. Modos Aprendizado (padrão) e Desafio; HUD de score discreto; TRILHA desligada esconde a pista inteira. Atualizar spec, guia e testes.
 2. Coach: câmera com sobreposição do alvo, pulso nos erros, transições.

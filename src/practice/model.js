@@ -1,7 +1,14 @@
+// Modes are presets over the independent layers; toggling a layer afterwards keeps the mode label.
+export const MODE_LAYERS = {
+  learn: { track: false, lyrics: true, hand: true },
+  challenge: { track: true, lyrics: true, hand: false },
+};
+
 export const createPracticeState = () => ({
   playing: false,
   elapsedMs: 74_000,
-  layers: { track: true, lyrics: true, hand: true },
+  mode: "learn",
+  layers: { ...MODE_LAYERS.learn },
   effects: { smoke: true, lightning: true, sound: false, reducedMotion: false },
   score: 24_680,
   streak: 12,
@@ -26,6 +33,9 @@ export function practiceReducer(state, action) {
       return { ...state, playing: !state.playing };
     case "clock/tick":
       return { ...state, elapsedMs: action.payload.elapsedMs ?? state.elapsedMs + action.payload.deltaMs };
+    case "mode/set":
+      if (!MODE_LAYERS[action.payload.mode]) return state;
+      return { ...state, mode: action.payload.mode, layers: { ...MODE_LAYERS[action.payload.mode] }, celebrating: false };
     case "layer/toggle":
       return {
         ...state,
